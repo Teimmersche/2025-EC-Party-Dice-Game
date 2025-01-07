@@ -16,19 +16,19 @@
         }
         .board {
             display: grid;
-            grid-template-columns: repeat(11, 50px);
-            grid-template-rows: repeat(11, 50px);
+            grid-template-columns: repeat(11, minmax(30px, 1fr));
+            grid-template-rows: repeat(11, minmax(30px, 1fr));
+            width: 90vmin;
+            height: 90vmin;
             margin: 20px;
             position: relative;
         }
         .node {
-            width: 50px;
-            height: 50px;
             border: 1px solid #ccc;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 12px;
+            font-size: calc(1vw + 6px);
             background-color: #fff;
         }
         .node.corner {
@@ -42,8 +42,8 @@
             background-color: red;
             color: white;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 60%;
+            height: 60%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -116,6 +116,73 @@
             background-color: #dc3545;
             color: white;
         }
+        .history {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .history table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .history th, .history td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        .history th {
+            background-color: #007bff;
+            color: white;
+        }
+        .dice {
+            width: 50px;
+            height: 50px;
+            position: relative;
+            margin: 10px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .dice-face {
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5%;
+        }
+        .dot {
+            width: 50%;
+            height: 50%;
+            background-color: #007bff;
+            border-radius: 50%;
+            place-self: center;
+        }
+        .dice.animate .dice-face {
+            animation: rollDice 1s ease-in-out;
+        }
+        @keyframes rollDice {
+            0% {
+                transform: rotate(0deg);
+            }
+            25% {
+                transform: rotate(90deg);
+            }
+            50% {
+                transform: rotate(180deg);
+            }
+            75% {
+                transform: rotate(270deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
@@ -128,6 +195,9 @@
     <div class="controls" style="display: none;" id="gameControls">
         <p>當前分數：<span id="score">100</span></p>
         <p>擲骰結果：<span id="diceResult">-</span></p>
+        <div class="dice" id="dice">
+            <div class="dice-face" id="diceFace"></div>
+        </div>
         <button class="button" id="rollDice">擲骰</button>
         <button class="button" id="endGame">結算分數</button>
     </div>
@@ -141,6 +211,19 @@
                 </tr>
             </thead>
             <tbody id="scoreboard"></tbody>
+        </table>
+    </div>
+    <div class="history">
+        <h2>遊玩紀錄</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>玩家名稱</th>
+                    <th>最終分數</th>
+                    <th>遊玩時間</th>
+                </tr>
+            </thead>
+            <tbody id="history"></tbody>
         </table>
     </div>
     <div class="question-container" id="questionContainer">
@@ -157,9 +240,11 @@
         const playerNameInput = document.getElementById('playerName');
         const startGameButton = document.getElementById('startGame');
         const scoreboardTable = document.getElementById('scoreboard');
+        const historyTable = document.getElementById('history');
         const questionContainer = document.getElementById('questionContainer');
         const questionText = document.getElementById('questionText');
         const optionsContainer = document.getElementById('options');
+        const diceFace = document.getElementById('diceFace');
 
         let playerScore = 100;
         let playerPosition = 0;
@@ -167,15 +252,40 @@
         let playerName = "";
         const totalNodes = 36;
         const questions = [
-            { text: "2 + 2 = ?", options: ["3", "4", "5"], answer: "4" },
+            { text: "測試達尼怪", options: ["尼", "泥", "妮"], answer: "尼" },
             { text: "5 × 3 = ?", options: ["15", "10", "12"], answer: "15" },
             { text: "10 ÷ 2 = ?", options: ["4", "5", "6"], answer: "5" },
         ];
 
+        const loadHistory = () => {
+            try {
+                const history = JSON.parse(localStorage.getItem('gameHistory')) || [];
+                historyTable.innerHTML = "";
+                history.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${record.name}</td><td>${record.score}</td><td>${record.time}</td>`;
+                    historyTable.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error loading history: ", error);
+            }
+        };
+
+        const saveToHistory = (name, score) => {
+            try {
+                const history = JSON.parse(localStorage.getItem('gameHistory')) || [];
+                const time = new Date().toLocaleString();
+                history.push({ name, score, time });
+                localStorage.setItem('gameHistory', JSON.stringify(history));
+            } catch (error) {
+                console.error("Error saving to history: ", error);
+            }
+        };
+
         startGameButton.addEventListener('click', () => {
             playerName = playerNameInput.value.trim();
-            if (!playerName) {
-                alert("請輸入名字！");
+            if (!playerName || playerName.length > 20 || /[^a-zA-Z0-9一-龥]/.test(playerName)) {
+                alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
                 return;
             }
             playerNameInput.disabled = true;
@@ -185,28 +295,30 @@
             updatePlayerPosition();
         });
 
-        for (let i = 0; i < 11; i++) {
-            for (let j = 0; j < 11; j++) {
-                const node = document.createElement('div');
-                const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
-                const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
-                                 (i === 10 && j === 0) || (i === 10 && j === 10);
+        const createNodes = () => {
+            for (let i = 0; i < 11; i++) {
+                for (let j = 0; j < 11; j++) {
+                    const node = document.createElement('div');
+                    const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
+                    const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
+                                     (i === 10 && j === 0) || (i === 10 && j === 10);
 
-                if (isCorner) {
-                    node.classList.add('node', 'corner');
-                } else if (isEdge) {
-                    node.classList.add('node', 'path');
-                } else {
-                    node.classList.add('node');
-                }
+                    if (isCorner) {
+                        node.classList.add('node', 'corner');
+                    } else if (isEdge) {
+                        node.classList.add('node', 'path');
+                    } else {
+                        node.classList.add('node');
+                    }
 
-                const nodeIndex = calculateNodeIndex(i, j);
-                if (nodeIndex !== null) {
-                    node.dataset.index = nodeIndex;
+                    const nodeIndex = calculateNodeIndex(i, j);
+                    if (nodeIndex !== null) {
+                        node.dataset.index = nodeIndex;
+                    }
+                    board.appendChild(node);
                 }
-                board.appendChild(node);
             }
-        }
+        };
 
         function calculateNodeIndex(row, col) {
             if (row === 0) return col;
@@ -228,16 +340,49 @@
             }
         }
 
+        function updateDiceFace(value) {
+            const dots = [
+                [],
+                [4],
+                [0, 8],
+                [0, 4, 8],
+                [0, 2, 6, 8],
+                [0, 2, 4, 6, 8],
+                [0, 2, 3, 5, 6, 8]
+            ];
+            diceFace.innerHTML = "";
+            for (let i = 0; i < 9; i++) {
+                const dot = document.createElement('div');
+                dot.className = dots[value].includes(i) ? 'dot' : '';
+                diceFace.appendChild(dot);
+            }
+        }
+
         rollDiceButton.addEventListener('click', () => {
+            diceFace.classList.add('animate');
+            rollDiceButton.disabled = true;
+            endGameButton.disabled = true;
+
             const dice = Math.floor(Math.random() * 6) + 1;
-            diceResultDisplay.textContent = dice;
-            totalNodesTravelled += dice;
-            playerPosition = (playerPosition + dice) % totalNodes;
-            updatePlayerPosition();
-            askQuestion(playerPosition);
+
+            setTimeout(() => {
+                diceFace.classList.remove('animate');
+                updateDiceFace(dice);
+                diceResultDisplay.textContent = dice;
+                rollDiceButton.disabled = false;
+                endGameButton.disabled = false;
+
+                totalNodesTravelled += dice;
+                playerPosition = (playerPosition + dice) % totalNodes;
+                updatePlayerPosition();
+                askQuestion(playerPosition);
+            }, 1000);
         });
 
         function askQuestion(position) {
+            rollDiceButton.disabled = true;
+            endGameButton.disabled = true;
+
             const questionIndex = position % questions.length;
             const question = questions[questionIndex];
             questionText.textContent = question.text;
@@ -256,6 +401,9 @@
                     }
                     scoreDisplay.textContent = playerScore;
                     questionContainer.style.display = "none";
+
+                    rollDiceButton.disabled = false;
+                    endGameButton.disabled = false;
 
                     if (playerScore <= 0) {
                         alert("遊戲結束！分數歸零！");
@@ -277,12 +425,17 @@
             newRow.innerHTML = `<td>${playerName}</td><td>${finalScore}</td>`;
             scoreboardTable.appendChild(newRow);
 
+            saveToHistory(playerName, finalScore);
+
             alert(`遊戲結束！\n答題分數：${playerScore}\n行經節點分數：${weightedScore}\n最終分數：${finalScore}`);
             rollDiceButton.disabled = true;
             endGameButton.disabled = true;
         });
 
+        loadHistory();
+        createNodes();
         updatePlayerPosition();
+        updateDiceFace(1);
     </script>
 </body>
 </html>

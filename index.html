@@ -4,7 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monopoly-like Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 50px);
+            grid-template-rows: repeat(6, 50px);
+            gap: 5px;
+            margin: 0 auto;
+        }
+
+        .node {
+            width: 50px;
+            height: 50px;
+            background-color: lightblue;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .node.blank {
+            background-color: white;
+        }
+
+        button {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Monopoly-like Game</h1>
@@ -13,6 +44,75 @@
     <div id="message"></div>
     <div id="score">Score: 0</div>
 
-    <script src="script.js"></script>
+    <script>
+        const board = document.getElementById('game-board');
+        const rollButton = document.getElementById('roll-dice');
+        const messageDiv = document.getElementById('message');
+        const scoreDiv = document.getElementById('score');
+
+        let currentPosition = 0;
+        let score = 0;
+
+        // Questions for each node (excluding the blank one)
+        const questions = [
+            { question: "What is 2 + 2?", answer: "4" },
+            { question: "What color is the sky?", answer: "blue" },
+            { question: "What is the capital of France?", answer: "Paris" },
+            { question: "What is 5 * 5?", answer: "25" },
+            { question: "What is the largest ocean?", answer: "Pacific" },
+            { question: "What is the square root of 16?", answer: "4" },
+            // Add more questions as needed
+        ];
+
+        function createBoard() {
+            for (let i = 0; i < 36; i++) {
+                const node = document.createElement('div');
+                node.classList.add('node');
+                if (i === 18) {
+                    node.classList.add('blank'); // Center node is blank
+                } else {
+                    node.textContent = i + 1; // Numbering nodes
+                }
+                board.appendChild(node);
+            }
+        }
+
+        function rollDice() {
+            const diceValue = Math.floor(Math.random() * 6) + 1; // Roll dice (1-6)
+            messageDiv.textContent = `You rolled a ${diceValue}`;
+            
+            // Move player
+            currentPosition += diceValue;
+            
+            if (currentPosition >= 32) {
+                currentPosition -= 32; // Wrap around if exceeds total nodes
+            }
+
+            askQuestion();
+        }
+
+        function askQuestion() {
+            if (currentPosition === 18) {
+                return; // Skip the blank node
+            }
+
+            const questionIndex = currentPosition % questions.length;
+            
+            const userAnswer = prompt(questions[questionIndex].question);
+            
+            if (userAnswer === questions[questionIndex].answer) {
+                score += 10; // Gain points for correct answer
+                messageDiv.textContent += ` Correct! You gained 10 points.`;
+            } else {
+                score -= 5; // Deduct points for wrong answer
+                messageDiv.textContent += ` Wrong! You lost 5 points.`;
+            }
+            
+            scoreDiv.textContent = `Score: ${score}`;
+        }
+
+        createBoard();
+        rollButton.addEventListener('click', rollDice);
+    </script>
 </body>
 </html>

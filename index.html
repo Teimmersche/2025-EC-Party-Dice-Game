@@ -13,6 +13,11 @@
             margin: 0;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
+            background-image: url('https://png.pngtree.com/thumb_back/fh260/background/20190223/ourmid/pngtree-fresh-sweet-watercolor-soft-gradient-border-background-colorgradientsimpleframe-image_75501.jpg');
+            background-size: 100vw 100vh; /* 設置圖片大小為整個視窗寬高 */
+            background-repeat: no-repeat; /* 防止重複 */
+            background-position: center center; /* 圖片置中 */
+            background-attachment: fixed; /* 背景固定不隨滾動 */
         }
         .board {
             display: grid;
@@ -163,26 +168,53 @@
             border-radius: 50%;
             place-self: center;
         }
-        .dice.animate .dice-face {
-            animation: rollDice 1s ease-in-out;
-        }
         @keyframes rollDice {
             0% {
-                transform: rotate(0deg);
+                transform: rotateX(0deg) rotateY(0deg);
             }
             25% {
-                transform: rotate(90deg);
+                transform: rotateX(90deg) rotateY(0deg);
             }
             50% {
-                transform: rotate(180deg);
+                transform: rotateX(90deg) rotateY(90deg);
             }
             75% {
-                transform: rotate(270deg);
+                transform: rotateX(180deg) rotateY(90deg);
             }
             100% {
-                transform: rotate(360deg);
+                transform: rotateX(360deg) rotateY(360deg);
             }
         }
+        .dice.animate .dice-face {
+            animation: rollDice 1s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+      .node::before {
+        content: attr(data-name);
+    position: absolute;
+    transform: translate(-50%, -100%); /* 中心對齊節點並稍微上移 */
+    left: 50%; /* 節點水平中心 */
+    top: 0; /* 名稱在節點上方 */
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 2px 5px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    pointer-events: none; /* 避免名稱阻擋點擊事件 */
+    white-space: nowrap; /* 防止文字換行 */
+}
+      .node {
+    position: relative; /* 確保 ::before 以節點為參考點 */
+}
+      .node {
+    margin: 5px; /* 調整節點之間的間距 */
+}
+      .hidden-node {
+    visibility: hidden; /* 隱藏節點內容，但保留空間 */
+    background-color: transparent; /* 確保背景透明 */
+    border: none; /* 移除邊框 */
+}
     </style>
 </head>
 <body>
@@ -296,29 +328,31 @@
         });
 
         const createNodes = () => {
-            for (let i = 0; i < 11; i++) {
-                for (let j = 0; j < 11; j++) {
-                    const node = document.createElement('div');
-                    const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
-                    const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
-                                     (i === 10 && j === 0) || (i === 10 && j === 10);
+    for (let i = 0; i < 11; i++) {
+        for (let j = 0; j < 11; j++) {
+            const node = document.createElement('div');
+            const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
+            const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
+                             (i === 10 && j === 0) || (i === 10 && j === 10);
 
-                    if (isCorner) {
-                        node.classList.add('node', 'corner');
-                    } else if (isEdge) {
-                        node.classList.add('node', 'path');
-                    } else {
-                        node.classList.add('node');
-                    }
-
-                    const nodeIndex = calculateNodeIndex(i, j);
-                    if (nodeIndex !== null) {
-                        node.dataset.index = nodeIndex;
-                    }
-                    board.appendChild(node);
-                }
+            // 設置節點的類型
+            if (isCorner) {
+                node.classList.add('node', 'corner');
+                node.dataset.name = '特殊角落'; // 設置角落的名稱
+            } else if (isEdge) {
+                node.classList.add('node', 'path');
+                const nodeIndex = calculateNodeIndex(i, j); // 計算節點編號
+                node.dataset.name = `路徑 ${nodeIndex}`; // 設置路徑的名稱
+            } else {
+                node.classList.add('node');
             }
-        };
+
+            // 添加節點到棋盤
+            board.appendChild(node);
+          
+        }
+    }
+};
 
         function calculateNodeIndex(row, col) {
             if (row === 0) return col;
@@ -363,17 +397,23 @@
             rollDiceButton.disabled = true;
             endGameButton.disabled = true;
 
-            const dice = Math.floor(Math.random() * 6) + 1;
+            const diceResult = Math.floor(Math.random() * 6) + 1;
+
+            let rollingInterval = setInterval(() => {
+                const randomValue = Math.floor(Math.random() * 6) + 1;
+                updateDiceFace(randomValue);
+            }, 100);
 
             setTimeout(() => {
+                clearInterval(rollingInterval);
                 diceFace.classList.remove('animate');
-                updateDiceFace(dice);
-                diceResultDisplay.textContent = dice;
+                updateDiceFace(diceResult);
+                diceResultDisplay.textContent = diceResult;
                 rollDiceButton.disabled = false;
                 endGameButton.disabled = false;
 
-                totalNodesTravelled += dice;
-                playerPosition = (playerPosition + dice) % totalNodes;
+                totalNodesTravelled += diceResult;
+                playerPosition = (playerPosition + diceResult) % totalNodes;
                 updatePlayerPosition();
                 askQuestion(playerPosition);
             }, 1000);

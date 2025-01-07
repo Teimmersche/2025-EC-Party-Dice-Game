@@ -3,116 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monopoly-like Game</title>
+    <title>大富翁遊戲</title>
     <style>
         body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
         }
-
-        #game-board {
+        .board {
             display: grid;
-            grid-template-columns: repeat(6, 50px);
-            grid-template-rows: repeat(6, 50px);
-            gap: 5px;
-            margin: 0 auto;
+            grid-template-columns: repeat(11, 50px);
+            grid-template-rows: repeat(11, 50px);
+            margin: 20px;
+            position: relative;
         }
-
         .node {
             width: 50px;
             height: 50px;
-            background-color: lightblue;
+            border: 1px solid #ccc;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-size: 12px;
+            background-color: #fff;
         }
-
-        .node.blank {
-            background-color: white;
+        .node.corner {
+            background-color: #ffdd57;
+            font-weight: bold;
         }
-
-        button {
+        .node.path {
+            background-color: #a5d8ff;
+        }
+        .player {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        .controls, .scoreboard {
+            text-align: center;
+        }
+        .button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .scoreboard {
             margin-top: 20px;
+        }
+        .scoreboard table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .scoreboard th, .scoreboard td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        .scoreboard th {
+            background-color: #007bff;
+            color: white;
+        }
+        .question-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .question-container h2 {
+            margin-bottom: 20px;
+        }
+        .question-container button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        .question-container button.correct {
+            background-color: #28a745;
+            color: white;
+        }
+        .question-container button.incorrect {
+            background-color: #dc3545;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <h1>Monopoly-like Game</h1>
-    <div id="game-board"></div>
-    <button id="roll-dice">Roll Dice</button>
-    <div id="message"></div>
-    <div id="score">Score: 0</div>
-
+    <h1>大富翁遊戲</h1>
+    <div class="controls">
+        <p>玩家名稱：<input type="text" id="playerName" placeholder="輸入名字" /></p>
+        <button class="button" id="startGame">開始遊戲</button>
+    </div>
+    <div class="board" id="board" style="display: none;"></div>
+    <div class="controls" style="display: none;" id="gameControls">
+        <p>當前分數：<span id="score">100</span></p>
+        <p>擲骰結果：<span id="diceResult">-</span></p>
+        <button class="button" id="rollDice">擲骰</button>
+        <button class="button" id="endGame">結算分數</button>
+    </div>
+    <div class="scoreboard">
+        <h2>計分版</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>玩家名稱</th>
+                    <th>最終分數</th>
+                </tr>
+            </thead>
+            <tbody id="scoreboard"></tbody>
+        </table>
+    </div>
+    <div class="question-container" id="questionContainer">
+        <h2 id="questionText">問題</h2>
+        <div id="options"></div>
+    </div>
     <script>
-        const board = document.getElementById('game-board');
-        const rollButton = document.getElementById('roll-dice');
-        const messageDiv = document.getElementById('message');
-        const scoreDiv = document.getElementById('score');
+        const board = document.getElementById('board');
+        const gameControls = document.getElementById('gameControls');
+        const scoreDisplay = document.getElementById('score');
+        const diceResultDisplay = document.getElementById('diceResult');
+        const rollDiceButton = document.getElementById('rollDice');
+        const endGameButton = document.getElementById('endGame');
+        const playerNameInput = document.getElementById('playerName');
+        const startGameButton = document.getElementById('startGame');
+        const scoreboardTable = document.getElementById('scoreboard');
+        const questionContainer = document.getElementById('questionContainer');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('options');
 
-        let currentPosition = 0;
-        let score = 0;
-
-        // Questions for each node (excluding the blank one)
+        let playerScore = 100;
+        let playerPosition = 0;
+        let totalNodesTravelled = 0;
+        let playerName = "";
+        const totalNodes = 36;
         const questions = [
-            { question: "What is 2 + 2?", answer: "4" },
-            { question: "What color is the sky?", answer: "blue" },
-            { question: "What is the capital of France?", answer: "Paris" },
-            { question: "What is 5 * 5?", answer: "25" },
-            { question: "What is the largest ocean?", answer: "Pacific" },
-            { question: "What is the square root of 16?", answer: "4" },
-            // Add more questions as needed
+            { text: "2 + 2 = ?", options: ["3", "4", "5"], answer: "4" },
+            { text: "5 × 3 = ?", options: ["15", "10", "12"], answer: "15" },
+            { text: "10 ÷ 2 = ?", options: ["4", "5", "6"], answer: "5" },
         ];
 
-        function createBoard() {
-            for (let i = 0; i < 36; i++) {
+        startGameButton.addEventListener('click', () => {
+            playerName = playerNameInput.value.trim();
+            if (!playerName) {
+                alert("請輸入名字！");
+                return;
+            }
+            playerNameInput.disabled = true;
+            startGameButton.disabled = true;
+            board.style.display = "grid";
+            gameControls.style.display = "block";
+            updatePlayerPosition();
+        });
+
+        for (let i = 0; i < 11; i++) {
+            for (let j = 0; j < 11; j++) {
                 const node = document.createElement('div');
-                node.classList.add('node');
-                if (i === 18) {
-                    node.classList.add('blank'); // Center node is blank
+                const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
+                const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
+                                 (i === 10 && j === 0) || (i === 10 && j === 10);
+
+                if (isCorner) {
+                    node.classList.add('node', 'corner');
+                } else if (isEdge) {
+                    node.classList.add('node', 'path');
                 } else {
-                    node.textContent = i + 1; // Numbering nodes
+                    node.classList.add('node');
+                }
+
+                const nodeIndex = calculateNodeIndex(i, j);
+                if (nodeIndex !== null) {
+                    node.dataset.index = nodeIndex;
                 }
                 board.appendChild(node);
             }
         }
 
-        function rollDice() {
-            const diceValue = Math.floor(Math.random() * 6) + 1; // Roll dice (1-6)
-            messageDiv.textContent = `You rolled a ${diceValue}`;
-            
-            // Move player
-            currentPosition += diceValue;
-            
-            if (currentPosition >= 32) {
-                currentPosition -= 32; // Wrap around if exceeds total nodes
-            }
-
-            askQuestion();
+        function calculateNodeIndex(row, col) {
+            if (row === 0) return col;
+            if (col === 10) return 10 + row;
+            if (row === 10) return 30 - col;
+            if (col === 0) return 30 + (10 - row);
+            return null;
         }
 
-        function askQuestion() {
-            if (currentPosition === 18) {
-                return; // Skip the blank node
+        function updatePlayerPosition() {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => node.innerHTML = "");
+            const currentNode = [...nodes].find(node => node.dataset.index == playerPosition);
+            if (currentNode) {
+                const playerElement = document.createElement('div');
+                playerElement.classList.add('player');
+                playerElement.textContent = "P";
+                currentNode.appendChild(playerElement);
             }
-
-            const questionIndex = currentPosition % questions.length;
-            
-            const userAnswer = prompt(questions[questionIndex].question);
-            
-            if (userAnswer === questions[questionIndex].answer) {
-                score += 10; // Gain points for correct answer
-                messageDiv.textContent += ` Correct! You gained 10 points.`;
-            } else {
-                score -= 5; // Deduct points for wrong answer
-                messageDiv.textContent += ` Wrong! You lost 5 points.`;
-            }
-            
-            scoreDiv.textContent = `Score: ${score}`;
         }
 
-        createBoard();
-        rollButton.addEventListener('click', rollDice);
+        rollDiceButton.addEventListener('click', () => {
+            const dice = Math.floor(Math.random() * 6) + 1;
+            diceResultDisplay.textContent = dice;
+            totalNodesTravelled += dice;
+            playerPosition = (playerPosition + dice) % totalNodes;
+            updatePlayerPosition();
+            askQuestion(playerPosition);
+        });
+
+        function askQuestion(position) {
+            const questionIndex = position % questions.length;
+            const question = questions[questionIndex];
+            questionText.textContent = question.text;
+            optionsContainer.innerHTML = "";
+
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.addEventListener('click', () => {
+                    if (option === question.answer) {
+                        alert("答對了！加10分！");
+                        playerScore += 10;
+                    } else {
+                        alert("答錯了！扣10分！");
+                        playerScore -= 10;
+                    }
+                    scoreDisplay.textContent = playerScore;
+                    questionContainer.style.display = "none";
+
+                    if (playerScore <= 0) {
+                        alert("遊戲結束！分數歸零！");
+                        rollDiceButton.disabled = true;
+                        endGameButton.disabled = true;
+                    }
+                });
+                optionsContainer.appendChild(button);
+            });
+
+            questionContainer.style.display = "block";
+        }
+
+        endGameButton.addEventListener('click', () => {
+            const weightedScore = totalNodesTravelled * 2;
+            const finalScore = playerScore + weightedScore;
+
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `<td>${playerName}</td><td>${finalScore}</td>`;
+            scoreboardTable.appendChild(newRow);
+
+            alert(`遊戲結束！\n答題分數：${playerScore}\n行經節點分數：${weightedScore}\n最終分數：${finalScore}`);
+            rollDiceButton.disabled = true;
+            endGameButton.disabled = true;
+        });
+
+        updatePlayerPosition();
     </script>
 </body>
 </html>

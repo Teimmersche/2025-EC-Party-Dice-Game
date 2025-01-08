@@ -29,14 +29,21 @@
             position: relative;
         }
         .node {
-            width: 40px; /* 調整為更大的寬度 */
-            height: 40px; /* 調整為更大的高度 */
+            width: 60px; /* 增加寬度 */
+            height: 60px; /* 增加高度 */
             display: flex;
+            flex-direction: column; /* 改為縱向排列 */
             align-items: center;
             justify-content: center;
             text-align: center;
-            overflow: hidden; /* 避免文字溢出 */
+            padding: 5px;
+            position: relative;
+            margin: 2px;
+            font-size: 12px; /* 調整字體大小 */
+            word-wrap: break-word; /* 允許文字換行 */
+            overflow: visible; /* 改為visible */
         }
+
         .node.corner {
             background-color: #ffdd57;
             font-weight: bold;
@@ -45,11 +52,12 @@
             background-color: #a5d8ff;
         }
         .player {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 2px;
             background-color: red;
             color: white;
             border-radius: 50%;
-            width: 60%;
-            height: 60%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -221,9 +229,6 @@
       .board {
     gap: 4px; /* 增加節點間距 */
 }
-
-    </style>
-
 @media (max-width: 600px) {
     .node {
         width: 50px; /* 增加寬度，讓文字更清晰 */
@@ -231,6 +236,7 @@
         font-size: 12px; /* 調整字體大小 */
     }
 }
+    </style>
 
 </head>
 <body>
@@ -359,20 +365,23 @@
             const node = document.createElement('div');
             const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
             const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
-                             (i === 10 && j === 0) || (i === 10 && j === 10);
+                           (i === 10 && j === 0) || (i === 10 && j === 10);
 
             if (isCorner) {
                 node.classList.add('node', 'corner');
+                node.textContent = '特殊角落'; // 直接設置文字內容
                 node.dataset.name = '特殊角落';
             } else if (isEdge) {
                 node.classList.add('node', 'path');
                 const nodeIndex = calculateNodeIndex(i, j);
                 const categoryNames = ['技術', '生活', '人物', '時事'];
-                node.dataset.category = categoryNames[nodeIndex % 4];
-                node.dataset.name = categoryNames[nodeIndex % 4];
-                node.dataset.index = nodeIndex; // 設置節點編號
+                const category = categoryNames[nodeIndex % 4];
+                node.dataset.category = category;
+                node.dataset.name = category;
+                node.textContent = category; // 直接設置類別名稱為文字內容
+                node.dataset.index = nodeIndex;
             } else {
-                node.classList.add('node');
+                node.classList.add('node', 'hidden-node');
             }
 
             board.appendChild(node);
@@ -409,16 +418,32 @@ adjustNodeStyles();
         }
 
         function updatePlayerPosition() {
-            const nodes = document.querySelectorAll('.node');
-            nodes.forEach(node => node.innerHTML = "");
-            const currentNode = [...nodes].find(node => node.dataset.index == playerPosition);
-            if (currentNode) {
-                const playerElement = document.createElement('div');
-                playerElement.classList.add('player');
-                playerElement.textContent = "P";
-                currentNode.appendChild(playerElement);
-            }
+    const nodes = document.querySelectorAll('.node');
+    
+    // 重置所有節點的內容
+    nodes.forEach(node => {
+        // 獲取節點的類別名稱，並清空節點內容
+        const category = node.dataset.category || node.dataset.name || '';
+        node.innerHTML = ''; // 確保內容被清空
+        
+        // 插入類別名稱
+        const categorySpan = document.createElement('span');
+        categorySpan.textContent = category;
+        node.appendChild(categorySpan);
+    });
+
+    // 找到玩家所在的節點
+    const currentNode = [...nodes].find(node => node.dataset.index == playerPosition);
+    if (currentNode) {
+        // 確保不重複插入玩家標記
+        if (!currentNode.querySelector('.player')) {
+            const playerElement = document.createElement('div');
+            playerElement.classList.add('player');
+            playerElement.textContent = "P";
+            currentNode.appendChild(playerElement);
         }
+    }
+}
 
         function updateDiceFace(value) {
             const dots = [

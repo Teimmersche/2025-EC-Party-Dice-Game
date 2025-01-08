@@ -253,7 +253,6 @@
             <div class="dice-face" id="diceFace"></div>
         </div>
         <button class="button" id="rollDice">擲骰</button>
-        <button class="button" id="endGame">結算分數</button>
     </div>
     <div class="scoreboard">
         <h2>計分版</h2>
@@ -290,7 +289,6 @@
         const scoreDisplay = document.getElementById('score');
         const diceResultDisplay = document.getElementById('diceResult');
         const rollDiceButton = document.getElementById('rollDice');
-        const endGameButton = document.getElementById('endGame');
         const playerNameInput = document.getElementById('playerName');
         const startGameButton = document.getElementById('startGame');
         const scoreboardTable = document.getElementById('scoreboard');
@@ -305,6 +303,8 @@
         let totalNodesTravelled = 0;
         let playerName = "";
         const totalNodes = 36;
+        let completedLaps = 0; // 新增變數，追蹤完成的迴圈數
+        let isGameOver = false; // 新增變數，遊戲是否結束
         const questions = {
         技術: [
         { text: "HTML 是什麼的縮寫？", options: ["Hyper Text Markup Language", "Hyperlink and Text Module", "Home Tool Markup Language"], answer: "Hyper Text Markup Language" },
@@ -464,34 +464,48 @@ adjustNodeStyles();
         }
 
         rollDiceButton.addEventListener('click', () => {
-            diceFace.classList.add('animate');
-            rollDiceButton.disabled = true;
-            endGameButton.disabled = true;
+    if (isGameOver) return; // 如果遊戲結束，直接返回
 
-            const diceResult = Math.floor(Math.random() * 6) + 1;
+    diceFace.classList.add('animate');
+    rollDiceButton.disabled = true;
 
-            let rollingInterval = setInterval(() => {
-                const randomValue = Math.floor(Math.random() * 6) + 1;
-                updateDiceFace(randomValue);
-            }, 100);
+    const diceResult = Math.floor(Math.random() * 6) + 1;
 
-            setTimeout(() => {
-                clearInterval(rollingInterval);
-                diceFace.classList.remove('animate');
-                updateDiceFace(diceResult);
-                diceResultDisplay.textContent = diceResult;
-                rollDiceButton.disabled = false;
-                endGameButton.disabled = false;
+    let rollingInterval = setInterval(() => {
+        const randomValue = Math.floor(Math.random() * 6) + 1;
+        updateDiceFace(randomValue);
+    }, 100);
 
-                totalNodesTravelled += diceResult;
-                playerPosition = (playerPosition + diceResult) % totalNodes;
-                updatePlayerPosition();
-                askQuestion(playerPosition);
-            }, 1000);
-        });
+    setTimeout(() => {
+        clearInterval(rollingInterval);
+        diceFace.classList.remove('animate');
+        updateDiceFace(diceResult);
+        diceResultDisplay.textContent = diceResult;
+        rollDiceButton.disabled = false;
+
+        totalNodesTravelled += diceResult;
+        playerPosition = (playerPosition + diceResult) % totalNodes;
+        updatePlayerPosition();
+
+        const newLaps = Math.floor(totalNodesTravelled / totalNodes); // 計算目前完成的迴圈數
+        if (newLaps > completedLaps) {
+            completedLaps = newLaps; // 更新完成的迴圈數
+            alert(`恭喜！你完成了第 ${completedLaps} 個迴圈！`);
+        }
+
+        if (completedLaps >= 3) { // 假設遊戲設定為 3 次迴圈結束
+            alert("遊戲結束！你完成了 3 個完整迴圈！");
+            rollDiceButton.disabled = true; // 停用骰子按鈕
+            isGameOver = true; // 遊戲結束
+        }
+
+        askQuestion(playerPosition);
+    }, 1000);
+});
 
         function askQuestion(position) {
-    // 找到當前節點
+    if (isGameOver) return; // 如果遊戲結束，直接返回
+
     const nodes = document.querySelectorAll('.node');
     const currentNode = [...nodes].find(node => node.dataset.index == position);
 
@@ -500,7 +514,6 @@ adjustNodeStyles();
         return;
     }
 
-    // 獲取節點類別並找到題目
     const category = currentNode.dataset.category;
     const questionPool = questions[category];
     if (!questionPool || questionPool.length === 0) {
@@ -508,11 +521,9 @@ adjustNodeStyles();
         return;
     }
 
-    // 隨機選擇題目
     const questionIndex = Math.floor(Math.random() * questionPool.length);
     const question = questionPool[questionIndex];
 
-    // 更新問題容器內容
     questionText.textContent = question.text;
     optionsContainer.innerHTML = "";
 
@@ -525,12 +536,8 @@ adjustNodeStyles();
         optionsContainer.appendChild(button);
     });
 
-    // 顯示問題容器
     questionContainer.style.display = "block";
-
-    // 禁用骰子按鈕，直到玩家回答問題
     rollDiceButton.disabled = true;
-    endGameButton.disabled = true;
 }
       function handleAnswer(isCorrect) {
     if (isCorrect) {
@@ -549,30 +556,8 @@ adjustNodeStyles();
 
     // 重新啟用骰子按鈕
     rollDiceButton.disabled = false;
-    endGameButton.disabled = false;
 
-    // 遊戲結束條件
-    if (playerScore <= 0) {
-        alert("遊戲結束！分數歸零！");
-        rollDiceButton.disabled = true;
-        endGameButton.disabled = true;
-    }
 }
-
-        endGameButton.addEventListener('click', () => {
-            const weightedScore = totalNodesTravelled * 2;
-            const finalScore = playerScore + weightedScore;
-
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `<td>${playerName}</td><td>${finalScore}</td>`;
-            scoreboardTable.appendChild(newRow);
-
-            saveToHistory(playerName, finalScore);
-
-            alert(`遊戲結束！\n答題分數：${playerScore}\n行經節點分數：${weightedScore}\n最終分數：${finalScore}`);
-            rollDiceButton.disabled = true;
-            endGameButton.disabled = true;
-        });
 
         loadHistory();
         createNodes();

@@ -215,6 +215,18 @@
     background-color: transparent; /* 確保背景透明 */
     border: none; /* 移除邊框 */
 }
+      .node[data-category="技術"] {
+    background-color: #f4d03f; /* 技術 - 黃色 */
+}
+      .node[data-category="生活"] {
+    background-color: #76d7c4; /* 生活 - 綠色 */
+}
+      .node[data-category="人物"] {
+    background-color: #a569bd; /* 人物 - 紫色 */
+}
+      .node[data-category="時事"] {
+    background-color: #5dade2; /* 時事 - 藍色 */
+}
     </style>
 </head>
 <body>
@@ -283,12 +295,21 @@
         let totalNodesTravelled = 0;
         let playerName = "";
         const totalNodes = 36;
-        const questions = [
-            { text: "測試達尼怪", options: ["尼", "泥", "妮"], answer: "尼" },
-            { text: "5 × 3 = ?", options: ["15", "10", "12"], answer: "15" },
-            { text: "10 ÷ 2 = ?", options: ["4", "5", "6"], answer: "5" },
-        ];
-
+        const questions = {
+        技術: [
+        { text: "HTML 是什麼的縮寫？", options: ["Hyper Text Markup Language", "Hyperlink and Text Module", "Home Tool Markup Language"], answer: "Hyper Text Markup Language" },
+        { text: "JavaScript 是一種什麼語言？", options: ["靜態語言", "動態語言", "標記語言"], answer: "動態語言" },
+        ],
+        生活: [
+        { text: "早餐不吃會對身體造成什麼影響？", options: ["增加新陳代謝", "降低血糖", "沒有影響"], answer: "降低血糖" },
+        ],
+        人物: [
+        { text: "愛因斯坦最著名的理論是什麼？", options: ["量子力學", "相對論", "熱力學"], answer: "相對論" },
+        ],
+        時事: [
+        { text: "2025 年世界的最新科技趨勢是什麼？", options: ["人工智慧", "量子計算", "區塊鏈"], answer: "人工智慧" },
+        ],
+    };
         const loadHistory = () => {
             try {
                 const history = JSON.parse(localStorage.getItem('gameHistory')) || [];
@@ -327,6 +348,7 @@
             updatePlayerPosition();
         });
 
+
         const createNodes = () => {
     for (let i = 0; i < 11; i++) {
         for (let j = 0; j < 11; j++) {
@@ -335,21 +357,21 @@
             const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
                              (i === 10 && j === 0) || (i === 10 && j === 10);
 
-            // 設置節點的類型
             if (isCorner) {
                 node.classList.add('node', 'corner');
-                node.dataset.name = '特殊角落'; // 設置角落的名稱
+                node.dataset.name = '特殊角落';
             } else if (isEdge) {
                 node.classList.add('node', 'path');
-                const nodeIndex = calculateNodeIndex(i, j); // 計算節點編號
-                node.dataset.name = `路徑 ${nodeIndex}`; // 設置路徑的名稱
+                const nodeIndex = calculateNodeIndex(i, j);
+                const categoryNames = ['技術', '生活', '人物', '時事'];
+                node.dataset.category = categoryNames[nodeIndex % 4];
+                node.dataset.name = categoryNames[nodeIndex % 4];
+                node.dataset.index = nodeIndex; // 設置節點編號
             } else {
                 node.classList.add('node');
             }
 
-            // 添加節點到棋盤
             board.appendChild(node);
-          
         }
     }
 };
@@ -420,42 +442,73 @@
         });
 
         function askQuestion(position) {
-            rollDiceButton.disabled = true;
-            endGameButton.disabled = true;
+    // 找到當前節點
+    const nodes = document.querySelectorAll('.node');
+    const currentNode = [...nodes].find(node => node.dataset.index == position);
 
-            const questionIndex = position % questions.length;
-            const question = questions[questionIndex];
-            questionText.textContent = question.text;
-            optionsContainer.innerHTML = "";
+    if (!currentNode) {
+        console.error("無法找到當前節點，位置：", position);
+        return;
+    }
 
-            question.options.forEach(option => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.addEventListener('click', () => {
-                    if (option === question.answer) {
-                        alert("答對了！加10分！");
-                        playerScore += 10;
-                    } else {
-                        alert("答錯了！扣10分！");
-                        playerScore -= 10;
-                    }
-                    scoreDisplay.textContent = playerScore;
-                    questionContainer.style.display = "none";
+    // 獲取節點類別並找到題目
+    const category = currentNode.dataset.category;
+    const questionPool = questions[category];
+    if (!questionPool || questionPool.length === 0) {
+        console.error("無題目可用，分類：", category);
+        return;
+    }
 
-                    rollDiceButton.disabled = false;
-                    endGameButton.disabled = false;
+    // 隨機選擇題目
+    const questionIndex = Math.floor(Math.random() * questionPool.length);
+    const question = questionPool[questionIndex];
 
-                    if (playerScore <= 0) {
-                        alert("遊戲結束！分數歸零！");
-                        rollDiceButton.disabled = true;
-                        endGameButton.disabled = true;
-                    }
-                });
-                optionsContainer.appendChild(button);
-            });
+    // 更新問題容器內容
+    questionText.textContent = question.text;
+    optionsContainer.innerHTML = "";
 
-            questionContainer.style.display = "block";
-        }
+    question.options.forEach(option => {
+        const button = document.createElement('button');
+        button.textContent = option;
+        button.addEventListener('click', () => {
+            handleAnswer(option === question.answer);
+        });
+        optionsContainer.appendChild(button);
+    });
+
+    // 顯示問題容器
+    questionContainer.style.display = "block";
+
+    // 禁用骰子按鈕，直到玩家回答問題
+    rollDiceButton.disabled = true;
+    endGameButton.disabled = true;
+}
+      function handleAnswer(isCorrect) {
+    if (isCorrect) {
+        alert("答對了！加10分！");
+        playerScore += 10;
+    } else {
+        alert("答錯了！扣10分！");
+        playerScore -= 10;
+    }
+
+    // 更新分數顯示
+    scoreDisplay.textContent = playerScore;
+
+    // 隱藏問題容器
+    questionContainer.style.display = "none";
+
+    // 重新啟用骰子按鈕
+    rollDiceButton.disabled = false;
+    endGameButton.disabled = false;
+
+    // 遊戲結束條件
+    if (playerScore <= 0) {
+        alert("遊戲結束！分數歸零！");
+        rollDiceButton.disabled = true;
+        endGameButton.disabled = true;
+    }
+}
 
         endGameButton.addEventListener('click', () => {
             const weightedScore = totalNodesTravelled * 2;

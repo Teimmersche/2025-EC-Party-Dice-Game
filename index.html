@@ -188,25 +188,27 @@
         .dice.animate .dice-face {
             animation: rollDice 1s cubic-bezier(0.25, 1, 0.5, 1);
         }
-      .node::before {
-        content: attr(data-name);
-    position: absolute;
-    transform: translate(-50%, -100%); /* 中心對齊節點並稍微上移 */
-    left: 50%; /* 節點水平中心 */
-    top: 0; /* 名稱在節點上方 */
-    font-size: 12px;
-    font-weight: bold;
-    color: #333;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 2px 5px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    pointer-events: none; /* 避免名稱阻擋點擊事件 */
-    white-space: nowrap; /* 防止文字換行 */
-}
+        .node::before {
+            content: attr(data-name);
+            position: absolute;
+            transform: translate(-50%, -120%); /* 提高文字位置 */
+            left: 50%;
+            top: 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 4px 6px; /* 增加文字的邊距 */
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            word-wrap: break-word; /* 文字自動換行 */
+            text-align: center;    /* 文字置中 */
+            max-width: 70px;       /* 限制文字的最大寬度 */
+      }
       .node {
-    position: relative; /* 確保 ::before 以節點為參考點 */
-}
+            position: relative; /* 確保 ::before 以節點為參考點 */
+      }
       .node {
     margin: 5px; /* 調整節點之間的間距 */
 }
@@ -228,6 +230,22 @@
     background-color: #5dade2; /* 時事 - 藍色 */
 }
     </style>
+
+@media (max-width: 600px) {
+    .node::before {
+        font-size: 10px;  /* 縮小文字大小 */
+        max-width: 50px; /* 限制節點名稱寬度 */
+    }
+    .board {
+        grid-template-columns: repeat(11, 1fr);
+        grid-template-rows: repeat(11, 1fr);
+        gap: 2px; /* 增加節點之間的間距 */
+    }
+    .node {
+        margin: 2px; /* 減少節點間距 */
+    }
+}
+
 </head>
 <body>
     <h1>大富翁遊戲</h1>
@@ -375,6 +393,26 @@
         }
     }
 };
+
+function adjustNodeStyles() {
+    const isSmallScreen = window.innerWidth < 600;
+    const nodes = document.querySelectorAll('.node');
+    nodes.forEach(node => {
+        if (isSmallScreen) {
+            node.style.fontSize = "10px"; /* 縮小文字 */
+            node.style.padding = "2px";  /* 減少節點邊距 */
+        } else {
+            node.style.fontSize = "14px"; /* 恢復預設大小 */
+            node.style.padding = "5px";
+        }
+    });
+}
+
+// 當使用者改變裝置尺寸時觸發
+window.addEventListener('resize', adjustNodeStyles);
+
+// 頁面加載時立即檢查一次
+adjustNodeStyles();
 
         function calculateNodeIndex(row, col) {
             if (row === 0) return col;

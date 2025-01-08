@@ -230,10 +230,15 @@
     gap: 4px; /* 增加節點間距 */
 }
 @media (max-width: 600px) {
+    .board {
+        width: 95vw; /* 使用視窗寬度的 95% */
+        height: 95vw; /* 確保是正方形 */
+        gap: 2px; /* 減少節點間的間距 */
+    }
     .node {
-        width: 50px; /* 增加寬度，讓文字更清晰 */
-        height: 50px;
-        font-size: 12px; /* 調整字體大小 */
+        width: auto; /* 自動調整節點大小 */
+        height: auto;
+        font-size: 10px; /* 縮小文字大小 */
     }
 }
     </style>
@@ -357,7 +362,21 @@
             gameControls.style.display = "block";
             updatePlayerPosition();
         });
+      function adjustBoardSize() {
+    const board = document.querySelector('.board');
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const smallerDimension = Math.min(viewportWidth, viewportHeight);
 
+    board.style.width = `${smallerDimension * 0.9}px`; // 90% 的較小尺寸
+    board.style.height = `${smallerDimension * 0.9}px`; // 讓地圖保持正方形
+}
+
+// 當畫面大小改變時執行
+window.addEventListener('resize', adjustBoardSize);
+
+// 初次載入執行一次
+adjustBoardSize();
 
         const createNodes = () => {
     for (let i = 0; i < 11; i++) {

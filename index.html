@@ -27,6 +27,9 @@
             height: 90vmin;
             margin: 20px;
             position: relative;
+            gap: 2px;
+            justify-content: center;
+            align-items: center;
         }
         .node {
             width: 60px; /* 增加寬度 */
@@ -42,6 +45,8 @@
             font-size: 12px; /* 調整字體大小 */
             word-wrap: break-word; /* 允許文字換行 */
             overflow: visible; /* 改為visible */
+            box-sizing: border-box;
+            line-height: 1;
         }
 
         .node.corner {
@@ -364,18 +369,30 @@
         });
       function adjustBoardSize() {
     const board = document.querySelector('.board');
+    const nodes = document.querySelectorAll('.node');
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const smallerDimension = Math.min(viewportWidth, viewportHeight);
 
-    board.style.width = `${smallerDimension * 0.9}px`; // 90% 的較小尺寸
-    board.style.height = `${smallerDimension * 0.9}px`; // 讓地圖保持正方形
+    // 調整地圖容器大小
+    const boardSize = smallerDimension * 0.9; // 地圖容器占螢幕的 90%
+    board.style.width = `${boardSize}px`;
+    board.style.height = `${boardSize}px`;
+
+    // 計算每個節點的大小
+    const gridSize = Math.sqrt(nodes.length); // 假設節點是正方形排列
+    const nodeSize = boardSize / gridSize; // 節點大小 = 容器大小 / 格數
+    nodes.forEach(node => {
+        node.style.width = `${nodeSize}px`;
+        node.style.height = `${nodeSize}px`;
+        node.style.fontSize = `${nodeSize / 5}px`; // 調整文字大小
+    });
 }
 
-// 當畫面大小改變時執行
+// 當視窗大小改變時執行
 window.addEventListener('resize', adjustBoardSize);
 
-// 初次載入執行一次
+// 頁面加載時執行一次
 adjustBoardSize();
 
         const createNodes = () => {

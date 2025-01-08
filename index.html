@@ -29,12 +29,13 @@
             position: relative;
         }
         .node {
-            border: 1px solid #ccc;
+            width: 40px; /* 調整為更大的寬度 */
+            height: 40px; /* 調整為更大的高度 */
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: calc(1vw + 6px);
-            background-color: #fff;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden; /* 避免文字溢出 */
         }
         .node.corner {
             background-color: #ffdd57;
@@ -188,24 +189,11 @@
         .dice.animate .dice-face {
             animation: rollDice 1s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        .node::before {
-            content: attr(data-name);
-            position: absolute;
-            transform: translate(-50%, -120%); /* 提高文字位置 */
-            left: 50%;
-            top: 0;
-            font-size: 12px;
-            font-weight: bold;
-            color: #333;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 4px 6px; /* 增加文字的邊距 */
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            pointer-events: none;
-            word-wrap: break-word; /* 文字自動換行 */
-            text-align: center;    /* 文字置中 */
-            max-width: 70px;       /* 限制文字的最大寬度 */
-      }
+.node::before {
+    word-wrap: break-word;
+    text-align: center;
+    max-width: 100%; /* 讓文字限制在節點寬度內 */
+}
       .node {
             position: relative; /* 確保 ::before 以節點為參考點 */
       }
@@ -229,20 +217,18 @@
       .node[data-category="時事"] {
     background-color: #5dade2; /* 時事 - 藍色 */
 }
+
+      .board {
+    gap: 4px; /* 增加節點間距 */
+}
+
     </style>
 
 @media (max-width: 600px) {
-    .node::before {
-        font-size: 10px;  /* 縮小文字大小 */
-        max-width: 50px; /* 限制節點名稱寬度 */
-    }
-    .board {
-        grid-template-columns: repeat(11, 1fr);
-        grid-template-rows: repeat(11, 1fr);
-        gap: 2px; /* 增加節點之間的間距 */
-    }
     .node {
-        margin: 2px; /* 減少節點間距 */
+        width: 50px; /* 增加寬度，讓文字更清晰 */
+        height: 50px;
+        font-size: 12px; /* 調整字體大小 */
     }
 }
 

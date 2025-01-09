@@ -318,37 +318,42 @@
 const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyA35bFIoCy66ZaQ5A1frIHBzyKIFqz7_62Ufpaqh3tChRoHA4UNMYwo6A390_HIXR0Zw/exec'; // 替換為您的網址
 
 // 傳送遊戲結果到 Google Sheets 的函式
+// 修正後的 sendGameResult 函數
 function sendGameResult(playerName, finalScore) {
-    const data = {
-        playerName: playerName,
-        finalScore: finalScore,
-        timestamp: new Date().toISOString()
-    };
-
     fetch(googleAppsScriptUrl, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        playerName: playerName,
-        finalScore: finalScore
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            playerName: playerName,
+            finalScore: finalScore,
+            timestamp: new Date().toISOString()
+        })
     })
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-})
-.then(data => {
-    console.log('Response from server:', data);
-    alert('遊戲紀錄已成功儲存！');
-})
-.catch(error => {
-    console.error('Error occurred:', error.message);
-    alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
-});
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response from server:', data);
+        alert('遊戲紀錄已成功儲存！');
+        
+        // 在成功儲存後更新本地歷史記錄
+        saveToHistory(playerName, finalScore);
+        loadHistory();
+    })
+    .catch(error => {
+        console.error('Error occurred:', error.message);
+        alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
+        
+        // 即使遠端儲存失敗，仍然更新本地歷史記錄
+        saveToHistory(playerName, finalScore);
+        loadHistory();
+    });
+}
 
         const board = document.getElementById('board');
         const gameControls = document.getElementById('gameControls');
@@ -356,7 +361,7 @@ function sendGameResult(playerName, finalScore) {
         const diceResultDisplay = document.getElementById('diceResult');
         const rollDiceButton = document.getElementById('rollDice');
         const playerNameInput = document.getElementById('playerName');
-        const startGameButton = document.getElementById('startGame');
+        const Button = document.getElementById('');
         const scoreboardTable = document.getElementById('scoreboard');
         const historyTable = document.getElementById('history');
         const questionContainer = document.getElementById('questionContainer');
@@ -366,23 +371,6 @@ function sendGameResult(playerName, finalScore) {
       const choiceContainer = document.getElementById('choiceContainer');
 const answerButton = document.getElementById('answerButton');
 const passButton = document.getElementById('passButton');
-      startGameButton.addEventListener('click', () => {
-    playerName = playerNameInput.value.trim();
-    if (!playerName || playerName.length > 20 || /[^a-zA-Z0-9一-龥]/.test(playerName)) {
-        alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
-        return;
-    }
-    playerNameInput.disabled = true;
-    startGameButton.disabled = true;
-    
-    // 顯示遊戲區域
-    board.style.display = "grid";
-    gameControls.style.display = "block";
-
-    // 隱藏玩家名稱輸入區塊
-    document.querySelector('.controls').style.display = "none";
-    updatePlayerPosition();
-});
 
 // 玩家選擇答題
 answerButton.addEventListener('click', () => {
@@ -480,18 +468,6 @@ passButton.addEventListener('click', () => {
             }
         };
 
-        startGameButton.addEventListener('click', () => {
-            playerName = playerNameInput.value.trim();
-            if (!playerName || playerName.length > 20 || /[^a-zA-Z0-9一-龥]/.test(playerName)) {
-                alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
-                return;
-            }
-            playerNameInput.disabled = true;
-            startGameButton.disabled = true;
-            board.style.display = "grid";
-            gameControls.style.display = "block";
-            updatePlayerPosition();
-        });
       function adjustBoardSize() {
     const board = document.querySelector('.board');
     const nodes = document.querySelectorAll('.node');
@@ -775,6 +751,36 @@ function handleSpecialCorner(cornerName) {
     if (!isGameOver) rollDiceButton.disabled = false;
 }
 
+// 將這段程式碼加在 JavaScript 的最後面
+document.addEventListener('DOMContentLoaded', () => {
+    const startGameButton = document.getElementById('startGame');
+    
+    // 移除所有現有的事件監聽器
+    const newButton = startGameButton.cloneNode(true);
+    startGameButton.parentNode.replaceChild(newButton, startGameButton);
+    
+    // 添加新的事件監聽器
+    newButton.addEventListener('click', () => {
+        const playerName = playerNameInput.value.trim();
+        if (!playerName || playerName.length > 20 || /[^a-zA-Z0-9一-龥]/.test(playerName)) {
+            alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
+            return;
+        }
+        
+        playerNameInput.disabled = true;
+        newButton.disabled = true;
+        
+        // 顯示遊戲區域
+        board.style.display = "grid";
+        gameControls.style.display = "block";
+        
+        // 隱藏玩家名稱輸入區塊
+        document.querySelector('.controls').style.display = "none";
+        
+        updatePlayerPosition();
+    });
+});
+        
         loadHistory();
         createNodes();
         updatePlayerPosition();

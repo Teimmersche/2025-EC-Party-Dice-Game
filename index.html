@@ -322,27 +322,36 @@ function sendGameResult(playerName, finalScore) {
     const data = {
         playerName: playerName,
         finalScore: finalScore,
-        timestamp: new Date().toISOString() // 記錄時間
+        timestamp: new Date().toISOString()
     };
 
-    // 使用 fetch 發送 POST 請求
     fetch(googleAppsScriptUrl, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json' // 指定資料格式為 JSON
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data) // 將資料打包成 JSON 格式
+        body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text(); // 回應可能是純文字
+    })
     .then(result => {
-        console.log('資料成功送出：', result);
-        alert('遊戲紀錄已儲存！');
+        console.log('Server Response:', result);
+        if (result === 'Success') {
+            alert('遊戲紀錄已成功儲存！');
+        } else {
+            alert(`無法儲存遊戲紀錄，伺服器回應：${result}`);
+        }
     })
     .catch(error => {
-        console.error('送出失敗：', error);
-        alert('無法儲存遊戲紀錄，請稍後再試。');
+        console.error('發送請求失敗：', error.message);
+        alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
     });
 }
+
 
         const board = document.getElementById('board');
         const gameControls = document.getElementById('gameControls');

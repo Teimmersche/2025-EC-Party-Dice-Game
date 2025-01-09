@@ -318,6 +318,20 @@
     <button id="passButton" class="button">跳過 (-10分)</button>
 </div>
     <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyAzkHsJWUDmdqOt7Qn1impVVAsKWFbCldo",
+  authDomain: "memory-game-records.firebaseapp.com",
+  databaseURL: "https://memory-game-records-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "memory-game-records",
+  storageBucket: "memory-game-records.firebasestorage.app",
+  messagingSenderId: "507617924712",
+  appId: "1:507617924712:web:02a7062709c593014dcddd",
+  measurementId: "G-WVTDV9Y859"
+};
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const board = document.getElementById('board');
         const gameControls = document.getElementById('gameControls');
         const scoreDisplay = document.getElementById('score');
@@ -649,10 +663,13 @@ function handleSpecialCorner(cornerName) {
         const newLaps = Math.floor(totalNodesTravelled / totalNodes);
 
         if (newLaps >= 3) {
-    alert("遊戲結束！你完成了 3 個完整迴圈！");
-    
-    // 儲存遊玩紀錄
+    alert("遊戲結果！你完成了 3 個完整迴圈！");
+
+    // 儲存遊玩紀錄到本地
     saveToHistory(playerName, playerScore);
+
+    // 將分數儲存到 Firebase
+    saveScoreToFirebase(playerName, playerScore);
 
     // 跳轉到遊玩紀錄頁面
     window.location.href = "history.html";

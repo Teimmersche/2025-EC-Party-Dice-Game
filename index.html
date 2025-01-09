@@ -314,6 +314,36 @@
     <button id="passButton" class="button">跳過 (-10分)</button>
 </div>
     <script>
+        // Google Apps Script 網頁應用程式網址
+const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyA35bFIoCy66ZaQ5A1frIHBzyKIFqz7_62Ufpaqh3tChRoHA4UNMYwo6A390_HIXR0Zw/exec'; // 替換為您的網址
+
+// 傳送遊戲結果到 Google Sheets 的函式
+function sendGameResult(playerName, finalScore) {
+    const data = {
+        playerName: playerName,
+        finalScore: finalScore,
+        timestamp: new Date().toISOString() // 記錄時間
+    };
+
+    // 使用 fetch 發送 POST 請求
+    fetch(googleAppsScriptUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' // 指定資料格式為 JSON
+        },
+        body: JSON.stringify(data) // 將資料打包成 JSON 格式
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('資料成功送出：', result);
+        alert('遊戲紀錄已儲存！');
+    })
+    .catch(error => {
+        console.error('送出失敗：', error);
+        alert('無法儲存遊戲紀錄，請稍後再試。');
+    });
+}
+
         const board = document.getElementById('board');
         const gameControls = document.getElementById('gameControls');
         const scoreDisplay = document.getElementById('score');
@@ -645,14 +675,18 @@ function handleSpecialCorner(cornerName) {
         const newLaps = Math.floor(totalNodesTravelled / totalNodes);
 
         if (newLaps >= 3) {
-            alert("遊戲結束！你完成了 3 個完整迴圈！");
-            playerPosition = 0;
-            updatePlayerPosition();
-            isGameOver = true;
-            rollDiceButton.disabled = true;
-            rollDiceButton.textContent = "遊戲結束";
-            return;
-        }
+    alert("遊戲結束！你完成了 3 個完整迴圈！");
+    playerPosition = 0;
+    updatePlayerPosition();
+    isGameOver = true;
+
+    // 傳送遊戲結果到 Google Sheets
+    sendGameResult(playerName, playerScore);
+
+    rollDiceButton.disabled = true;
+    rollDiceButton.textContent = "遊戲結束";
+    return;
+}
 
         playerPosition = (playerPosition + diceResult) % totalNodes;
         updatePlayerPosition();

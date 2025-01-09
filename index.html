@@ -319,19 +319,18 @@
 </div>
     <script>
         const firebaseConfig = {
-  apiKey: "AIzaSyAzkHsJWUDmdqOt7Qn1impVVAsKWFbCldo",
-  authDomain: "memory-game-records.firebaseapp.com",
-  databaseURL: "https://memory-game-records-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "memory-game-records",
-  storageBucket: "memory-game-records.firebasestorage.app",
-  messagingSenderId: "507617924712",
-  appId: "1:507617924712:web:02a7062709c593014dcddd",
-  measurementId: "G-WVTDV9Y859"
+    apiKey: "您的 API Key",
+    authDomain: "您的 Auth Domain",
+    databaseURL: "您的 Database URL",
+    projectId: "您的 Project ID",
+    storageBucket: "您的 Storage Bucket",
+    messagingSenderId: "您的 Sender ID",
+    appId: "您的 App ID",
+    measurementId: "您的 Measurement ID"
 };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database(); // 確保初始化 Realtime Database
         const board = document.getElementById('board');
         const gameControls = document.getElementById('gameControls');
         const scoreDisplay = document.getElementById('score');
@@ -463,17 +462,24 @@ passButton.addEventListener('click', () => {
         };
 
         startGameButton.addEventListener('click', () => {
-            playerName = playerNameInput.value.trim();
-            if (!playerName || playerName.length > 20 || /[^a-zA-Z0-9一-龥]/.test(playerName)) {
-                alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
-                return;
-            }
-            playerNameInput.disabled = true;
-            startGameButton.disabled = true;
-            board.style.display = "grid";
-            gameControls.style.display = "block";
-            updatePlayerPosition();
-        });
+    playerName = playerNameInput.value.trim();
+    if (!playerName || playerName.length > 20) {
+        alert("請輸入有效的名字（20 字以內）！");
+        return;
+    }
+
+    // 禁用名稱輸入和按鈕
+    playerNameInput.disabled = true;
+    startGameButton.disabled = true;
+
+    // 顯示遊戲區域並隱藏初始畫面
+    board.style.display = "grid";
+    gameControls.style.display = "block";
+    document.querySelector('.controls').style.display = "none";
+
+    // 更新玩家初始位置
+    updatePlayerPosition();
+});
       function adjustBoardSize() {
     const board = document.querySelector('.board');
     const nodes = document.querySelectorAll('.node');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大富翁遊戲</title>
+    <title>2025尾牙遊戲(測試版)</title>
     <style>
         body {
             display: flex;
@@ -135,6 +135,9 @@
             background-color: #dc3545;
             color: white;
         }
+      .scoreboard, .history {
+    display: none; /* 隱藏計分版和遊玩紀錄 */
+}
         .history {
             margin-top: 20px;
             width: 100%;
@@ -262,13 +265,13 @@
 
 </head>
 <body>
-    <h1>大富翁遊戲</h1>
+    <h1>2025尾牙遊戲(測試版)</h1>
     <div class="controls">
-        <p>玩家名稱：<input type="text" id="playerName" placeholder="輸入名字" /></p>
-        <button class="button" id="startGame">開始遊戲</button>
-    </div>
-    <div class="board" id="board" style="display: none;"></div>
-    <div class="controls" style="display: none;" id="gameControls">
+    <p>玩家名稱：<input type="text" id="playerName" placeholder="輸入名字" /></p>
+    <button class="button" id="startGame">開始遊戲</button>
+</div>
+<div class="board" id="board" style="display: none;"></div>
+<div class="controls" style="display: none;" id="gameControls">
         <p>當前分數：<span id="score">100</span></p>
         <p>擲骰結果：<span id="diceResult">-</span></p>
         <div class="dice" id="dice">
@@ -327,6 +330,23 @@
       const choiceContainer = document.getElementById('choiceContainer');
 const answerButton = document.getElementById('answerButton');
 const passButton = document.getElementById('passButton');
+      startGameButton.addEventListener('click', () => {
+    playerName = playerNameInput.value.trim();
+    if (!playerName || playerName.length > 20 || /[^a-zA-Z0-9一-龥]/.test(playerName)) {
+        alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
+        return;
+    }
+    playerNameInput.disabled = true;
+    startGameButton.disabled = true;
+    
+    // 顯示遊戲區域
+    board.style.display = "grid";
+    gameControls.style.display = "block";
+
+    // 隱藏玩家名稱輸入區塊
+    document.querySelector('.controls').style.display = "none";
+    updatePlayerPosition();
+});
 
 // 玩家選擇答題
 answerButton.addEventListener('click', () => {
@@ -472,14 +492,13 @@ const createNodes = () => {
             const node = document.createElement('div');
             const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
             const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
-                           (i === 10 && j === 0) || (i === 10 && j === 10);
+                             (i === 10 && j === 0) || (i === 10 && j === 10);
 
             if (isCorner) {
                 node.classList.add('node', 'corner');
-                node.textContent = '特殊角落'; // 直接設置文字內容
+                node.textContent = '特殊角落';
                 node.dataset.name = '特殊角落';
 
-                // 計算特殊角落索引並儲存
                 const cornerIndex = calculateNodeIndex(i, j);
                 node.dataset.index = cornerIndex;
                 specialCorners.push(cornerIndex);
@@ -490,7 +509,7 @@ const createNodes = () => {
                 const category = categoryNames[nodeIndex % 4];
                 node.dataset.category = category;
                 node.dataset.name = category;
-                node.textContent = category; // 直接設置類別名稱為文字內容
+                node.textContent = category;
                 node.dataset.index = nodeIndex;
             } else {
                 node.classList.add('node', 'hidden-node');
@@ -534,7 +553,6 @@ adjustNodeStyles();
     
     // 重置所有節點的內容
     nodes.forEach(node => {
-        // 獲取節點的類別名稱，並清空節點內容
         const category = node.dataset.category || node.dataset.name || '';
         node.innerHTML = ''; // 確保內容被清空
         
@@ -547,13 +565,10 @@ adjustNodeStyles();
     // 找到玩家所在的節點
     const currentNode = [...nodes].find(node => node.dataset.index == playerPosition);
     if (currentNode) {
-        // 確保不重複插入玩家標記
-        if (!currentNode.querySelector('.player')) {
-            const playerElement = document.createElement('div');
-            playerElement.classList.add('player');
-            playerElement.textContent = "P";
-            currentNode.appendChild(playerElement);
-        }
+        const playerElement = document.createElement('div');
+        playerElement.classList.add('player');
+        playerElement.textContent = "P";
+        currentNode.appendChild(playerElement);
     }
 }
 
@@ -626,47 +641,43 @@ function handleSpecialCorner(cornerName) {
         diceResultDisplay.textContent = diceResult;
 
         totalNodesTravelled += diceResult;
-        playerPosition = (playerPosition + diceResult) % totalNodes;
-        updatePlayerPosition();
 
         const newLaps = Math.floor(totalNodesTravelled / totalNodes);
-        if (newLaps > completedLaps) {
-            completedLaps = newLaps;
 
-            if (completedLaps >= 3) {
+        if (newLaps >= 3) {
     alert("遊戲結束！你完成了 3 個完整迴圈！");
-    rollDiceButton.disabled = true;
-    isGameOver = true;
+    
+    // 儲存遊玩紀錄
+    saveToHistory(playerName, playerScore);
 
-    // 將玩家移回起點
-    playerPosition = 0;
-    updatePlayerPosition();
-
+    // 跳轉到遊玩紀錄頁面
+    window.location.href = "history.html";
     return;
 }
 
-            alert(`恭喜！你完成了第 ${completedLaps} 個迴圈！`);
-        }
+        playerPosition = (playerPosition + diceResult) % totalNodes;
+        updatePlayerPosition();
 
-        if (specialCorners.includes(playerPosition)) {
-            setTimeout(() => {
+        setTimeout(() => {
+            if (newLaps > completedLaps) {
+                completedLaps = newLaps;
+                alert(`恭喜！你完成了第 ${completedLaps} 個迴圈！`);
+            }
+
+            // 判斷是特殊角落還是普通節點
+            if (specialCorners.includes(playerPosition)) {
                 handleSpecialCorner('特殊角落');
-            }, 200);
-            return;
-        }
-
-        choiceContainer.style.display = "block";
+            } else {
+                // 顯示是否答題的選項
+                choiceContainer.style.display = "block";
+                rollDiceButton.disabled = true; // 禁用骰子按鈕，等待答題或扣分
+            }
+        }, 500);
     }, 1000);
 });
 
         function askQuestion(position) {
-    if (isGameOver) return; // 如果遊戲結束，直接返回
-
-    // 防止特殊角落觸發答題
-    if (specialCorners.includes(position)) {
-        console.warn("特殊角落不應觸發答題！");
-        return;
-    }
+    if (isGameOver) return;
 
     const nodes = document.querySelectorAll('.node');
     const currentNode = [...nodes].find(node => node.dataset.index == position);
@@ -677,9 +688,14 @@ function handleSpecialCorner(cornerName) {
     }
 
     const category = currentNode.dataset.category;
+    if (!category) {
+        console.warn("當前節點沒有分類，跳過答題。");
+        return;
+    }
+
     const questionPool = questions[category];
     if (!questionPool || questionPool.length === 0) {
-        console.error("無題目可用，分類：", category);
+        console.warn("無可用題目，分類：", category);
         return;
     }
 
@@ -716,9 +732,8 @@ function handleSpecialCorner(cornerName) {
     // 隱藏問題容器
     questionContainer.style.display = "none";
 
-    // 重新啟用骰子按鈕
-    rollDiceButton.disabled = false;
-
+    // 啟用擲骰按鈕
+    if (!isGameOver) rollDiceButton.disabled = false;
 }
 
         loadHistory();

@@ -245,6 +245,18 @@
         height: auto;
         font-size: 10px; /* 縮小文字大小 */
     }
+  #choiceContainer {
+    display: none; /* 預設隱藏 */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
     </style>
 
@@ -293,6 +305,11 @@
         <h2 id="questionText">問題</h2>
         <div id="options"></div>
     </div>
+  <div class="question-container" id="choiceContainer">
+    <h2>是否答題？</h2>
+    <button id="answerButton" class="button">答題</button>
+    <button id="passButton" class="button">跳過 (-10分)</button>
+</div>
     <script>
         const board = document.getElementById('board');
         const gameControls = document.getElementById('gameControls');
@@ -307,27 +324,79 @@
         const questionText = document.getElementById('questionText');
         const optionsContainer = document.getElementById('options');
         const diceFace = document.getElementById('diceFace');
+      const choiceContainer = document.getElementById('choiceContainer');
+const answerButton = document.getElementById('answerButton');
+const passButton = document.getElementById('passButton');
+
+// 玩家選擇答題
+answerButton.addEventListener('click', () => {
+    choiceContainer.style.display = "none"; // 隱藏選擇視窗
+    askQuestion(playerPosition); // 呼叫題目顯示函數
+});
+
+// 玩家選擇跳過
+passButton.addEventListener('click', () => {
+    choiceContainer.style.display = "none"; // 隱藏選擇視窗
+    playerScore -= 10; // 扣除10分
+    scoreDisplay.textContent = playerScore; // 更新分數顯示
+    rollDiceButton.disabled = false; // 啟用骰子按鈕
+});
 
         let playerScore = 100;
         let playerPosition = 0;
         let totalNodesTravelled = 0;
         let playerName = "";
-        const totalNodes = 36;
+        const totalNodes = 40;
         let completedLaps = 0; // 新增變數，追蹤完成的迴圈數
         let isGameOver = false; // 新增變數，遊戲是否結束
         const questions = {
         技術: [
         { text: "HTML 是什麼的縮寫？", options: ["Hyper Text Markup Language", "Hyperlink and Text Module", "Home Tool Markup Language"], answer: "Hyper Text Markup Language" },
         { text: "JavaScript 是一種什麼語言？", options: ["靜態語言", "動態語言", "標記語言"], answer: "動態語言" },
+        { text: "技術測試題1", options: ["A", "B", "C"], answer: "A" },
+        { text: "技術測試題2", options: ["A", "B", "C"], answer: "A" },
+        { text: "技術測試題3", options: ["A", "B", "C"], answer: "A" },
+        { text: "技術測試題4", options: ["A", "B", "C"], answer: "A" },
+        { text: "技術測試題5", options: ["A", "B", "C"], answer: "A" },
+        { text: "技術測試題6", options: ["A", "B", "C"], answer: "A" },
+        { text: "技術測試題7", options: ["A", "B", "C"], answer: "A" },
+        { text: "技術測試題8", options: ["A", "B", "C"], answer: "A" },
         ],
         生活: [
         { text: "早餐不吃會對身體造成什麼影響？", options: ["增加新陳代謝", "降低血糖", "沒有影響"], answer: "降低血糖" },
+        { text: "生活測試題1", options: ["A", "B", "C"], answer: "A" },
+        { text: "生活測試題2", options: ["A", "B", "C"], answer: "A" },
+        { text: "生活測試題3", options: ["A", "B", "C"], answer: "A" },
+        { text: "生活測試題4", options: ["A", "B", "C"], answer: "A" },
+        { text: "生活測試題5", options: ["A", "B", "C"], answer: "A" },
+        { text: "生活測試題6", options: ["A", "B", "C"], answer: "A" },
+        { text: "生活測試題7", options: ["A", "B", "C"], answer: "A" },
+        { text: "生活測試題8", options: ["A", "B", "C"], answer: "A" },
+        { text: "生活測試題9", options: ["A", "B", "C"], answer: "A" },
         ],
         人物: [
         { text: "愛因斯坦最著名的理論是什麼？", options: ["量子力學", "相對論", "熱力學"], answer: "相對論" },
+        { text: "人物測試題1", options: ["A", "B", "C"], answer: "A" },
+        { text: "人物測試題2", options: ["A", "B", "C"], answer: "A" },
+        { text: "人物測試題3", options: ["A", "B", "C"], answer: "A" },
+        { text: "人物測試題4", options: ["A", "B", "C"], answer: "A" },
+        { text: "人物測試題5", options: ["A", "B", "C"], answer: "A" },
+        { text: "人物測試題6", options: ["A", "B", "C"], answer: "A" },
+        { text: "人物測試題7", options: ["A", "B", "C"], answer: "A" },
+        { text: "人物測試題8", options: ["A", "B", "C"], answer: "A" },
+        { text: "人物測試題9", options: ["A", "B", "C"], answer: "A" },
         ],
         時事: [
         { text: "2025 年世界的最新科技趨勢是什麼？", options: ["人工智慧", "量子計算", "區塊鏈"], answer: "人工智慧" },
+        { text: "時事測試題1", options: ["A", "B", "C"], answer: "A" },
+        { text: "時事測試題2", options: ["A", "B", "C"], answer: "B" },
+        { text: "時事測試題3", options: ["A", "B", "C"], answer: "A" },
+        { text: "時事測試題4", options: ["A", "B", "C"], answer: "C" },
+        { text: "時事測試題5", options: ["A", "B", "C"], answer: "A" },
+        { text: "時事測試題6", options: ["A", "B", "C"], answer: "A" },
+        { text: "時事測試題7", options: ["A", "B", "C"], answer: "A" },
+        { text: "時事測試題8", options: ["A", "B", "C"], answer: "C" },
+        { text: "時事測試題9", options: ["A", "B", "C"], answer: "B" },
         ],
     };
         const loadHistory = () => {
@@ -395,7 +464,9 @@ window.addEventListener('resize', adjustBoardSize);
 // 頁面加載時執行一次
 adjustBoardSize();
 
-        const createNodes = () => {
+const specialCorners = []; // 儲存特殊角落的索引
+
+const createNodes = () => {
     for (let i = 0; i < 11; i++) {
         for (let j = 0; j < 11; j++) {
             const node = document.createElement('div');
@@ -407,6 +478,11 @@ adjustBoardSize();
                 node.classList.add('node', 'corner');
                 node.textContent = '特殊角落'; // 直接設置文字內容
                 node.dataset.name = '特殊角落';
+
+                // 計算特殊角落索引並儲存
+                const cornerIndex = calculateNodeIndex(i, j);
+                node.dataset.index = cornerIndex;
+                specialCorners.push(cornerIndex);
             } else if (isEdge) {
                 node.classList.add('node', 'path');
                 const nodeIndex = calculateNodeIndex(i, j);
@@ -481,6 +557,37 @@ adjustNodeStyles();
     }
 }
 
+      function checkSpecialCorner(position) {
+    const nodes = document.querySelectorAll('.node');
+    const currentNode = [...nodes].find(node => node.dataset.index == position);
+
+    if (currentNode && currentNode.classList.contains('corner')) {
+        handleSpecialCorner(currentNode.dataset.name);
+    }
+}
+
+function handleSpecialCorner(cornerName) {
+    switch (cornerName) {
+        case '特殊角落':
+            alert("歡迎來到特殊角落！你獲得了 50 分獎勵！");
+            playerScore += 50;
+            break;
+        default:
+            alert(`你進入了 ${cornerName}，但目前沒有定義的行動。`);
+            break;
+    }
+
+    // 更新分數顯示
+    scoreDisplay.textContent = playerScore;
+
+    // 隱藏「是否答題」和其他相關視窗
+    choiceContainer.style.display = "none";
+    questionContainer.style.display = "none";
+
+    // 啟用骰子按鈕，允許玩家繼續遊戲
+    rollDiceButton.disabled = false;
+}
+           
         function updateDiceFace(value) {
             const dots = [
                 [],
@@ -500,7 +607,7 @@ adjustNodeStyles();
         }
 
         rollDiceButton.addEventListener('click', () => {
-    if (isGameOver) return; // 如果遊戲結束，直接返回
+    if (isGameOver) return;
 
     diceFace.classList.add('animate');
     rollDiceButton.disabled = true;
@@ -517,30 +624,49 @@ adjustNodeStyles();
         diceFace.classList.remove('animate');
         updateDiceFace(diceResult);
         diceResultDisplay.textContent = diceResult;
-        rollDiceButton.disabled = false;
 
         totalNodesTravelled += diceResult;
         playerPosition = (playerPosition + diceResult) % totalNodes;
         updatePlayerPosition();
 
-        const newLaps = Math.floor(totalNodesTravelled / totalNodes); // 計算目前完成的迴圈數
+        const newLaps = Math.floor(totalNodesTravelled / totalNodes);
         if (newLaps > completedLaps) {
-            completedLaps = newLaps; // 更新完成的迴圈數
+            completedLaps = newLaps;
+
+            if (completedLaps >= 3) {
+    alert("遊戲結束！你完成了 3 個完整迴圈！");
+    rollDiceButton.disabled = true;
+    isGameOver = true;
+
+    // 將玩家移回起點
+    playerPosition = 0;
+    updatePlayerPosition();
+
+    return;
+}
+
             alert(`恭喜！你完成了第 ${completedLaps} 個迴圈！`);
         }
 
-        if (completedLaps >= 3) { // 假設遊戲設定為 3 次迴圈結束
-            alert("遊戲結束！你完成了 3 個完整迴圈！");
-            rollDiceButton.disabled = true; // 停用骰子按鈕
-            isGameOver = true; // 遊戲結束
+        if (specialCorners.includes(playerPosition)) {
+            setTimeout(() => {
+                handleSpecialCorner('特殊角落');
+            }, 200);
+            return;
         }
 
-        askQuestion(playerPosition);
+        choiceContainer.style.display = "block";
     }, 1000);
 });
 
         function askQuestion(position) {
     if (isGameOver) return; // 如果遊戲結束，直接返回
+
+    // 防止特殊角落觸發答題
+    if (specialCorners.includes(position)) {
+        console.warn("特殊角落不應觸發答題！");
+        return;
+    }
 
     const nodes = document.querySelectorAll('.node');
     const currentNode = [...nodes].find(node => node.dataset.index == position);

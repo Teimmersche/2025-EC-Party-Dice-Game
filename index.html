@@ -326,32 +326,29 @@ function sendGameResult(playerName, finalScore) {
     };
 
     fetch(googleAppsScriptUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        playerName: playerName,
+        finalScore: finalScore
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text(); // 回應可能是純文字
-    })
-    .then(result => {
-        console.log('Server Response:', result);
-        if (result === 'Success') {
-            alert('遊戲紀錄已成功儲存！');
-        } else {
-            alert(`無法儲存遊戲紀錄，伺服器回應：${result}`);
-        }
-    })
-    .catch(error => {
-        console.error('發送請求失敗：', error.message);
-        alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
-    });
-}
-
+})
+.then(response => {
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+})
+.then(data => {
+    console.log('Response from server:', data);
+    alert('遊戲紀錄已成功儲存！');
+})
+.catch(error => {
+    console.error('Error occurred:', error.message);
+    alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
+});
 
         const board = document.getElementById('board');
         const gameControls = document.getElementById('gameControls');

@@ -315,7 +315,7 @@
 </div>
     <script>
         // Google Apps Script 網頁應用程式網址
-const url = `${https://script.google.com/macros/s/AKfycbyjPRpZNHwnFbriLR2MYHgA1yXN0AaUN4g_cajaE7GB8kuqeoSad2-ZKF6OC1Ly22o2/exec}?name=${encodeURIComponent(playerName)}&score=${encodeURIComponent(finalScore)}`;
+const url = "https://script.google.com/macros/s/AKfycbyjPRpZNHwnFbriLR2MYHgA1yXN0AaUN4g_cajaE7GB8kuqeoSad2-ZKF6OC1Ly22o2/exec?name=" + encodeURIComponent(playerName) + "&score=" + encodeURIComponent(finalScore);
 
 fetch(url)
     .then(response => response.json())

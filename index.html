@@ -320,16 +320,10 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyjPRpZNHwn
 // 傳送遊戲結果到 Google Sheets 的函式
 // 修正後的 sendGameResult 函數
 function sendGameResult(playerName, finalScore) {
-    fetch(googleAppsScriptUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            playerName: playerName,
-            finalScore: finalScore,
-            timestamp: new Date().toISOString()
-        })
+    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&finalScore=${encodeURIComponent(finalScore)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+
+    fetch(url, {
+        method: 'GET', // 改用 GET 方法
     })
     .then(response => {
         if (!response.ok) {
@@ -338,18 +332,18 @@ function sendGameResult(playerName, finalScore) {
         return response.json();
     })
     .then(data => {
-        console.log('Response from server:', data);
+        console.log('伺服器回應：', data);
         alert('遊戲紀錄已成功儲存！');
         
-        // 在成功儲存後更新本地歷史記錄
+        // 更新本地紀錄
         saveToHistory(playerName, finalScore);
         loadHistory();
     })
     .catch(error => {
-        console.error('Error occurred:', error.message);
+        console.error('發生錯誤：', error.message);
         alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
         
-        // 即使遠端儲存失敗，仍然更新本地歷史記錄
+        // 即使失敗，也儲存本地歷史紀錄
         saveToHistory(playerName, finalScore);
         loadHistory();
     });

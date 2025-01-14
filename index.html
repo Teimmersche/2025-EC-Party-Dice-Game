@@ -322,7 +322,6 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzRyU66wjwU
 function sendGameResult(name, score) {
     const url = `${googleAppsScriptUrl}?name=${encodeURIComponent(name)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
     
-    const name = name || "Anonymous";
     fetch(url, {
         method: 'GET', // 改用 GET 方法
     })
@@ -355,7 +354,7 @@ function sendGameResult(name, score) {
         const scoreDisplay = document.getElementById('score');
         const diceResultDisplay = document.getElementById('diceResult');
         const rollDiceButton = document.getElementById('rollDice');
-        const nameInput = document.getElementById('name');
+        const name = document.getElementById('name');
         const Button = document.getElementById('');
         const scoreboardTable = document.getElementById('scoreboard');
         const historyTable = document.getElementById('history');
@@ -756,13 +755,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 添加新的事件監聽器
     newButton.addEventListener('click', () => {
-        const name = nameInput.value.trim();
+        const name = name.value.trim();
         if (!name || name.length > 20 || /[^a-zA-Z0-9一-龥]/.test(name)) {
             alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
             return;
         }
         
-        nameInput.disabled = true;
+        name.disabled = true;
         newButton.disabled = true;
         
         // 顯示遊戲區域

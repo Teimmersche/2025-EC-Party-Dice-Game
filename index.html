@@ -321,7 +321,8 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzRyU66wjwU
 // 修正後的 sendGameResult 函數
 function sendGameResult(name, score) {
     const url = `${googleAppsScriptUrl}?name=${encodeURIComponent(name)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
-
+    
+    const name = userName || "Anonymous";
     fetch(url, {
         method: 'GET', // 改用 GET 方法
     })

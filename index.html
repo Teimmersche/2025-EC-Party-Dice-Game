@@ -267,7 +267,7 @@
 <body>
     <h1>2025尾牙遊戲(測試版)</h1>
     <div class="controls">
-    <p>玩家名稱：<input type="text" id="playerName" placeholder="輸入名字" /></p>
+    <p>玩家名稱：<input type="text" id="name" placeholder="輸入名字" /></p>
     <button class="button" id="startGame">開始遊戲</button>
 </div>
 <div class="board" id="board" style="display: none;"></div>
@@ -319,8 +319,8 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzRyU66wjwU
 
 // 傳送遊戲結果到 Google Sheets 的函式
 // 修正後的 sendGameResult 函數
-function sendGameResult(playerName, playerScore) {
-    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&playerScore=${encodeURIComponent(playerScore)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+function sendGameResult(name, score) {
+    const url = `${googleAppsScriptUrl}?name=${encodeURIComponent(name)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
 
     fetch(url, {
         method: 'GET', // 改用 GET 方法
@@ -336,7 +336,7 @@ function sendGameResult(playerName, playerScore) {
         alert('遊戲紀錄已成功儲存！');
         
         // 更新本地紀錄
-        saveToHistory(playerName, playerScore);
+        saveToHistory(name, score);
         loadHistory();
     })
     .catch(error => {
@@ -344,7 +344,7 @@ function sendGameResult(playerName, playerScore) {
         alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
         
         // 即使失敗，也儲存本地歷史紀錄
-        saveToHistory(playerName, playerScore);
+        saveToHistory(name, score);
         loadHistory();
     });
 }
@@ -354,7 +354,7 @@ function sendGameResult(playerName, playerScore) {
         const scoreDisplay = document.getElementById('score');
         const diceResultDisplay = document.getElementById('diceResult');
         const rollDiceButton = document.getElementById('rollDice');
-        const playerNameInput = document.getElementById('playerName');
+        const nameInput = document.getElementById('name');
         const Button = document.getElementById('');
         const scoreboardTable = document.getElementById('scoreboard');
         const historyTable = document.getElementById('history');
@@ -375,15 +375,15 @@ answerButton.addEventListener('click', () => {
 // 玩家選擇跳過
 passButton.addEventListener('click', () => {
     choiceContainer.style.display = "none"; // 隱藏選擇視窗
-    playerScore -= 10; // 扣除10分
-    scoreDisplay.textContent = playerScore; // 更新分數顯示
+    score -= 10; // 扣除10分
+    scoreDisplay.textContent = score; // 更新分數顯示
     rollDiceButton.disabled = false; // 啟用骰子按鈕
 });
 
-        let playerScore = 100;
+        let score = 100;
         let playerPosition = 0;
         let totalNodesTravelled = 0;
-        let playerName = "";
+        let name = "";
         const totalNodes = 40;
         let completedLaps = 0; // 新增變數，追蹤完成的迴圈數
         let isGameOver = false; // 新增變數，遊戲是否結束
@@ -591,7 +591,7 @@ function handleSpecialCorner(cornerName) {
     switch (cornerName) {
         case '特殊角落':
             alert("歡迎來到特殊角落！你獲得了 50 分獎勵！");
-            playerScore += 50;
+            score += 50;
             break;
         default:
             alert(`你進入了 ${cornerName}，但目前沒有定義的行動。`);
@@ -599,7 +599,7 @@ function handleSpecialCorner(cornerName) {
     }
 
     // 更新分數顯示
-    scoreDisplay.textContent = playerScore;
+    scoreDisplay.textContent = score;
 
     // 隱藏「是否答題」和其他相關視窗
     choiceContainer.style.display = "none";
@@ -657,7 +657,7 @@ function handleSpecialCorner(cornerName) {
     isGameOver = true;
 
     // 傳送遊戲結果到 Google Sheets
-    sendGameResult(playerName, playerScore);
+    sendGameResult(name, score);
 
     rollDiceButton.disabled = true;
     rollDiceButton.textContent = "遊戲結束";
@@ -729,14 +729,14 @@ function handleSpecialCorner(cornerName) {
       function handleAnswer(isCorrect) {
     if (isCorrect) {
         alert("答對了！加10分！");
-        playerScore += 10;
+        score += 10;
     } else {
         alert("答錯了！扣10分！");
-        playerScore -= 10;
+        score -= 10;
     }
 
     // 更新分數顯示
-    scoreDisplay.textContent = playerScore;
+    scoreDisplay.textContent = score;
 
     // 隱藏問題容器
     questionContainer.style.display = "none";
@@ -755,13 +755,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 添加新的事件監聽器
     newButton.addEventListener('click', () => {
-        const playerName = playerNameInput.value.trim();
-        if (!playerName || playerName.length > 20 || /[^a-zA-Z0-9一-龥]/.test(playerName)) {
+        const name = nameInput.value.trim();
+        if (!name || name.length > 20 || /[^a-zA-Z0-9一-龥]/.test(name)) {
             alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
             return;
         }
         
-        playerNameInput.disabled = true;
+        nameInput.disabled = true;
         newButton.disabled = true;
         
         // 顯示遊戲區域

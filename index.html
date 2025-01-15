@@ -761,7 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
     newButton.addEventListener('click', () => {
         playerName = nameInput.value.trim(); // 改這行，原本是 const name =
         console.log("遊戲開始時的玩家名字：", playerName);
-        if (!name || name.length > 20 || /[^a-zA-Z0-9一-龥]/.test(name)) {
+        if (!playerName || playerName.length > 20 || !/^[\w\u4e00-\u9fa5]+$/.test(playerName)) {
             alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
             return;
         }

@@ -319,7 +319,7 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzRyU66wjwU
 
 // 傳送遊戲結果到 Google Sheets 的函式
 // 修正後的 sendGameResult 函數
-function sendGameResult(name, score) {
+function sendGameResult(playerName, score) { // 改參數名稱以保持一致
     const url = `${googleAppsScriptUrl}?name=${encodeURIComponent(name)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
     
     fetch(url, {
@@ -380,6 +380,7 @@ passButton.addEventListener('click', () => {
     rollDiceButton.disabled = false; // 啟用骰子按鈕
 });
 
+        let playerName = ""; // 新增全域變量        
         let score = 100;
         let playerPosition = 0;
         let totalNodesTravelled = 0;
@@ -657,7 +658,7 @@ function handleSpecialCorner(cornerName) {
     isGameOver = true;
 
     // 傳送遊戲結果到 Google Sheets
-    sendGameResult(name, score);
+    sendGameResult(playerName, score); // 改這行，原本是用 name
 
     rollDiceButton.disabled = true;
     rollDiceButton.textContent = "遊戲結束";
@@ -755,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 添加新的事件監聽器
     newButton.addEventListener('click', () => {
-        const name = nameInput.value.trim();
+        playerName = nameInput.value.trim(); // 改這行，原本是 const name =
         if (!name || name.length > 20 || /[^a-zA-Z0-9一-龥]/.test(name)) {
             alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
             return;

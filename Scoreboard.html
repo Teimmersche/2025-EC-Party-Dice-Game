@@ -8,7 +8,10 @@
     table {
       width: 50%;
       margin: 20px auto;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0; /* 確保框格緊密排列 */
+      border: 2px solid #ddd; /* 表格外框 */
+      border-radius: 10px; /* 整個表格的圓角 */
     }
     th, td {
       border: 1px solid #ddd;
@@ -17,6 +20,14 @@
     }
     th {
       background-color: #f4f4f4;
+      border-top-left-radius: 10px; /* 左上圓角 */
+      border-top-right-radius: 10px; /* 右上圓角 */
+    }
+    td:first-child {
+      border-bottom-left-radius: 10px; /* 左下圓角 */
+    }
+    td:last-child {
+      border-bottom-right-radius: 10px; /* 右下圓角 */
     }
   </style>
   <script>

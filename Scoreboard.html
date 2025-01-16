@@ -42,6 +42,7 @@
     }
     tr {
       background: #fff;
+      transition: transform 1s ease, opacity 1.5s ease;
     }
     tr:nth-child(odd) {
       background: #f9f9f9;
@@ -52,15 +53,25 @@
       font-weight: bold;
     }
 
+    /* 新增行淡入效果 */
+    .row-enter {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    .row-enter-active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     /* 分數更新動畫 */
     .score-update {
-      animation: fadeIn 0.5s ease-in-out;
+      animation: highlight 2s ease;
     }
-    @keyframes fadeIn {
-      from {
+    @keyframes highlight {
+      0% {
         background-color: #55efc4;
       }
-      to {
+      100% {
         background-color: transparent;
       }
     }
@@ -100,27 +111,38 @@
 
     function updateTable(data) {
       const tableBody = document.getElementById('scores-table-body');
-      tableBody.innerHTML = '';
+      const newRows = [];
 
       data.forEach((player, index) => {
         const row = document.createElement('tr');
-        row.className = index < 3 ? 'top-rank' : ''; // 高亮前三名
+        row.className = index < 3 ? 'top-rank' : 'row-enter'; // 高亮前三名，新增行加入動畫
 
         row.innerHTML = `
           <td>${player.playerName}</td>
           <td class="score">${player.score}</td>
         `;
-        tableBody.appendChild(row);
 
-        // 如果分數有變化，添加動畫
+        // 添加分數更新動畫
         const scoreCell = row.querySelector('.score');
         if (previousData[index] && previousData[index].score !== player.score) {
           scoreCell.classList.add('score-update');
           setTimeout(() => {
             scoreCell.classList.remove('score-update');
-          }, 500);
+          }, 2000);
         }
+
+        // 延遲加入行淡入動畫
+        setTimeout(() => {
+          row.classList.remove('row-enter');
+          row.classList.add('row-enter-active');
+        }, 100);
+
+        newRows.push(row);
       });
+
+      // 清空表格並添加新行
+      tableBody.innerHTML = '';
+      newRows.forEach(row => tableBody.appendChild(row));
     }
 
     // 每分鐘自動更新

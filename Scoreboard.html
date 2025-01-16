@@ -18,15 +18,12 @@
     th {
       background-color: #f4f4f4;
     }
-    .updated {
-      background-color: #d4edda; /* 淺綠色表示更新 */
-    }
   </style>
   <script>
     let previousData = []; // 存儲上次的資料
 
     async function fetchPlayerScores() {
-      const url = 'https://script.google.com/macros/s/AKfycbyoZZS0UEmcmQWt5SdfxnqgRlnHY7hVCciqfjFM-faO-Ncv3_Vdup8nJtpC1oZ2AwBcmw/exec'; // 替換為你的 Apps Script URL
+      const url = 'https://script.google.com/macros/s/你的WebAppID/exec'; // 替換為你的 Apps Script URL
 
       try {
         const response = await fetch(url);
@@ -36,6 +33,9 @@
         const hasChanged = JSON.stringify(data) !== JSON.stringify(previousData);
 
         if (hasChanged) {
+          // 將資料按分數（score）從高到低排序
+          data.sort((a, b) => b.score - a.score);
+
           // 更新表格內容
           updateTable(data);
           previousData = data; // 更新舊資料
@@ -55,16 +55,8 @@
           <td>${player.playerName}</td>
           <td>${player.score}</td>
         `;
-        row.classList.add('updated'); // 高亮顯示更新的行
         tableBody.appendChild(row);
       });
-
-      // 移除高亮顯示，延遲 2 秒後執行
-      setTimeout(() => {
-        document.querySelectorAll('.updated').forEach(row => {
-          row.classList.remove('updated');
-        });
-      }, 2000);
     }
 
     // 每分鐘自動更新

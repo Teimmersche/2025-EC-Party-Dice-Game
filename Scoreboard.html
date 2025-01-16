@@ -9,9 +9,9 @@
       width: 50%;
       margin: 20px auto;
       border-collapse: separate;
-      border-spacing: 0; /* 確保框格緊密排列 */
-      border: 2px solid #ddd; /* 表格外框 */
-      border-radius: 10px; /* 整個表格的圓角 */
+      border-spacing: 0;
+      border: 2px solid #ddd;
+      border-radius: 10px;
     }
     th, td {
       border: 1px solid #ddd;
@@ -20,14 +20,14 @@
     }
     th {
       background-color: #f4f4f4;
-      border-top-left-radius: 10px; /* 左上圓角 */
-      border-top-right-radius: 10px; /* 右上圓角 */
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
     }
     td:first-child {
-      border-bottom-left-radius: 10px; /* 左下圓角 */
+      border-bottom-left-radius: 10px;
     }
     td:last-child {
-      border-bottom-right-radius: 10px; /* 右下圓角 */
+      border-bottom-right-radius: 10px;
     }
   </style>
   <script>
@@ -67,6 +67,141 @@
           <td>${player.score}</td>
         `;
         tableBody.appendChild(row);
+      });
+    }
+
+    // 每分鐘自動更新
+    setInterval(fetchPlayerScores, 60000); // 60,000 毫秒 = 1 分鐘
+
+    // 頁面加載時立即抓取一次資料
+    window.onload = fetchPlayerScores;
+  </script>
+</head>
+<body>
+  <h1 style="text-align: center;">Player Scores</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Player Name</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="scores-table-body">
+      <!-- 資料將由 JavaScript 動態插入 -->
+    </tbody>
+  </table>
+</body>
+</html>
+測試效果
+打開你的網頁，應該可以看到表格的邊角變得圓滑。
+修改 border-radius 的值可以調整圓角的大小，例如 border-radius: 20px 則圓角更明顯。
+如果有其他需求（如更改顏色或細節設計），隨時告訴我！
+
+
+
+
+
+
+
+你說：
+我想要每次更新在欄位異動的時候，有滑動的動畫(比如說原先在第一列的玩家，因為有新數據進來而掉到第三列)。這會很難做到嗎？
+ChatGPT 說：
+ChatGPT
+在表格中實現滑動動畫（像排序後的行移動動畫），確實可以做到！這需要一些 CSS 和 JavaScript 的結合來處理。以下是簡化的實現步驟和範例程式碼。
+
+實現步驟
+檢測資料變動：在新數據進來時比較每一行的位置變化。
+為行新增過渡效果：用 CSS transform 和 transition 模擬行滑動動畫。
+更新 DOM 結構：在動畫結束後，將行的位置調整到新的排序。
+完整範例程式碼
+html
+複製
+編輯
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Scores</title>
+  <style>
+    table {
+      width: 50%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    tr {
+      transition: transform 0.5s ease; /* 定義滑動動畫 */
+    }
+  </style>
+  <script>
+    let previousData = []; // 存儲上次的資料
+
+    async function fetchPlayerScores() {
+      const url = 'https://script.google.com/macros/s/你的WebAppID/exec'; // 替換為你的 Apps Script URL
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // 將資料按分數（score）從高到低排序
+        data.sort((a, b) => b.score - a.score);
+
+        // 比較新資料和舊資料是否有變化
+        if (JSON.stringify(data) !== JSON.stringify(previousData)) {
+          animateTableUpdate(data);
+          previousData = data; // 更新舊資料
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    function animateTableUpdate(data) {
+      const tableBody = document.getElementById('scores-table-body');
+
+      // 建立索引表，記錄目前行的位置
+      const rows = Array.from(tableBody.children);
+      const positions = new Map();
+      rows.forEach((row, index) => {
+        const playerName = row.querySelector('td').textContent;
+        positions.set(playerName, row.offsetTop); // 記錄每行的初始位置
+      });
+
+      // 更新 DOM 結構
+      tableBody.innerHTML = '';
+      data.forEach(player => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${player.playerName}</td>
+          <td>${player.score}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      // 觸發滑動動畫
+      Array.from(tableBody.children).forEach(row => {
+        const playerName = row.querySelector('td').textContent;
+        if (positions.has(playerName)) {
+          const oldTop = positions.get(playerName);
+          const newTop = row.offsetTop;
+          const delta = oldTop - newTop;
+
+          row.style.transform = `translateY(${delta}px)`; // 初始化位置
+          requestAnimationFrame(() => {
+            row.style.transition = 'transform 0.5s ease'; // 動畫過渡
+            row.style.transform = 'translateY(0)'; // 恢復到最終位置
+          });
+        }
       });
     }
 

@@ -321,10 +321,10 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycby_l9bQ-259
 // 修正後的 sendGameResult 函數
 function sendGameResult(playerName, score) { // 改參數名稱以保持一致
 console.log("準備傳送的玩家名字：", playerName);
-console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?name=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
+console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
     
     const actualPlayerName = playerName || window.playerName || nameInput.value.trim();
-    const url = `${googleAppsScriptUrl}?name=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
 
     console.log("完整請求 URL:", url); 
     

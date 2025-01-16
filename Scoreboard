@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Scores</title>
+  <style>
+    table {
+      width: 50%;
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+  <script>
+    async function fetchPlayerScores() {
+      const url = 'https://script.google.com/macros/s/你的WebAppID/exec'; // 替換為你的 Apps Script URL
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // 更新表格
+        const tableBody = document.getElementById('scores-table-body');
+        tableBody.innerHTML = ''; // 清空現有內容
+
+        data.forEach(player => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${player.playerName}</td>
+            <td>${player.score}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    window.onload = fetchPlayerScores;
+  </script>
+</head>
+<body>
+  <h1 style="text-align: center;">Player Scores</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Player Name</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="scores-table-body">
+      <!-- 資料將由 JavaScript 動態插入 -->
+    </tbody>
+  </table>
+</body>
+</html>

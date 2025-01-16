@@ -322,32 +322,27 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycby_l9bQ-259
 function sendGameResult(playerName, score) { // 改參數名稱以保持一致
 console.log("準備傳送的玩家名字：", playerName);
 console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?name=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
+    
+    const actualPlayerName = playerName || window.playerName || nameInput.value.trim();
     const url = `${googleAppsScriptUrl}?name=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+
+    console.log("完整請求 URL:", url); 
     
     fetch(url, {
-        method: 'GET', // 改用 GET 方法
+        method: 'GET',
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log('伺服器回應：', data);
-        alert('遊戲紀錄已成功儲存！');
-        
-        // 更新本地紀錄
-        saveToHistory(playerName, score);
+        console.log('API 回應:', data);
+        saveToHistory(actualPlayerName, score);
         loadHistory();
+        alert('遊戲紀錄已成功儲存！');
     })
     .catch(error => {
-        console.error('發生錯誤：', error.message);
-        alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
-        
-        // 即使失敗，也儲存本地歷史紀錄
-        saveToHistory(playerName, score);
+        console.error('API 錯誤:', error);
+        saveToHistory(actualPlayerName, score);
         loadHistory();
+        alert(`儲存失敗: ${error.message}`);
     });
 }
 
@@ -654,14 +649,9 @@ function handleSpecialCorner(cornerName) {
 
         if (newLaps >= 3) {
     alert("遊戲結束！你完成了 3 個完整迴圈！");
-    playerPosition = 0;
-    updatePlayerPosition();
+    console.log("遊戲結束時的 playerName:", playerName);  // 加入除錯訊息
     isGameOver = true;
-
-    console.log("遊戲結束時的玩家名字：", playerName);
-    // 傳送遊戲結果到 Google Sheets
-    sendGameResult(playerName, score); // 改這行，原本是用 name
-
+    sendGameResult(playerName, score);
     rollDiceButton.disabled = true;
     rollDiceButton.textContent = "遊戲結束";
     return;

@@ -322,7 +322,7 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycby_l9bQ-259
 function sendGameResult(playerName, score) { // 改參數名稱以保持一致
 console.log("準備傳送的玩家名字：", playerName);
 console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?name=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
-    const url = `${googleAppsScriptUrl}?name=${encodeURIComponent(name)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+    const url = `${googleAppsScriptUrl}?name=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
     
     fetch(url, {
         method: 'GET', // 改用 GET 方法

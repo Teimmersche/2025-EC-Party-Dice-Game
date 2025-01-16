@@ -338,7 +338,7 @@ console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?name=${encod
         alert('遊戲紀錄已成功儲存！');
         
         // 更新本地紀錄
-        saveToHistory(name, score);
+        saveToHistory(playerName, score);
         loadHistory();
     })
     .catch(error => {
@@ -346,7 +346,7 @@ console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?name=${encod
         alert(`無法儲存遊戲紀錄，錯誤原因：${error.message}`);
         
         // 即使失敗，也儲存本地歷史紀錄
-        saveToHistory(name, score);
+        saveToHistory(playerName, score);
         loadHistory();
     });
 }
@@ -386,7 +386,6 @@ passButton.addEventListener('click', () => {
         let score = 100;
         let playerPosition = 0;
         let totalNodesTravelled = 0;
-        let name = "";
         const totalNodes = 40;
         let completedLaps = 0; // 新增變數，追蹤完成的迴圈數
         let isGameOver = false; // 新增變數，遊戲是否結束
@@ -454,11 +453,11 @@ passButton.addEventListener('click', () => {
             }
         };
 
-        const saveToHistory = (name, score) => {
+        const saveToHistory = (playerName, score) => {
             try {
                 const history = JSON.parse(localStorage.getItem('gameHistory')) || [];
                 const time = new Date().toLocaleString();
-                history.push({ name, score, time });
+                history.push({ name: playerName, score, time });
                 localStorage.setItem('gameHistory', JSON.stringify(history));
             } catch (error) {
                 console.error("Error saving to history: ", error);

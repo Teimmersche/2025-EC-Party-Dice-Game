@@ -1,34 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Player Scores</title>
+  <title>計分板</title>
   <style>
-    table {
-      width: 50%;
-      margin: 20px auto;
-      border-collapse: collapse;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
+    /* 整體設計 */
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f5;
+      margin: 0;
+      padding: 20px;
       text-align: center;
     }
+    h1 {
+      font-size: 3rem;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    /* 表格樣式 */
+    table {
+      width: 80%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      border: 3px solid #ccc;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      font-size: 1.5rem;
+    }
+    th, td {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
     th {
-      background-color: #f4f4f4;
+      background: #4caf50;
+      color: #fff;
+      font-weight: bold;
     }
     tr {
-      transition: transform 0.5s ease; /* 定義滑動動畫 */
+      background: #fff;
+    }
+    tr:nth-child(odd) {
+      background: #f9f9f9;
+    }
+    tr.top-rank {
+      background: #ffeaa7;
+      color: #333;
+      font-weight: bold;
+    }
+
+    /* 分數更新動畫 */
+    .score-update {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {
+        background-color: #55efc4;
+      }
+      to {
+        background-color: transparent;
+      }
+    }
+
+    /* 響應式設計 */
+    @media (max-width: 768px) {
+      table {
+        font-size: 1rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
     }
   </style>
   <script>
     let previousData = []; // 存儲上次的資料
 
     async function fetchPlayerScores() {
-      const url = 'https://script.google.com/macros/s/AKfycbyoZZS0UEmcmQWt5SdfxnqgRlnHY7hVCciqfjFM-faO-Ncv3_Vdup8nJtpC1oZ2AwBcmw/exec'; // 替換為你的 Apps Script URL
+      const url = 'https://script.google.com/macros/s/AKfycbyoZZS0UEmcmQWt5SdfxnqgRlnHY7hVCciqfjFM-faO-Ncv3_Vdup8nJtpC1oZ2AwBcmw/exec'; // 替換為你的 Apps Script 網址
 
       try {
         const response = await fetch(url);
@@ -37,69 +88,55 @@
         // 將資料按分數（score）從高到低排序
         data.sort((a, b) => b.score - a.score);
 
-        // 比較新資料和舊資料是否有變化
+        // 如果資料發生變化，則更新表格
         if (JSON.stringify(data) !== JSON.stringify(previousData)) {
-          animateTableUpdate(data);
+          updateTable(data);
           previousData = data; // 更新舊資料
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('資料獲取失敗：', error);
       }
     }
 
-    function animateTableUpdate(data) {
+    function updateTable(data) {
       const tableBody = document.getElementById('scores-table-body');
-
-      // 建立索引表，記錄目前行的位置
-      const rows = Array.from(tableBody.children);
-      const positions = new Map();
-      rows.forEach((row, index) => {
-        const playerName = row.querySelector('td').textContent;
-        positions.set(playerName, row.offsetTop); // 記錄每行的初始位置
-      });
-
-      // 更新 DOM 結構
       tableBody.innerHTML = '';
-      data.forEach(player => {
+
+      data.forEach((player, index) => {
         const row = document.createElement('tr');
+        row.className = index < 3 ? 'top-rank' : ''; // 高亮前三名
+
         row.innerHTML = `
           <td>${player.playerName}</td>
-          <td>${player.score}</td>
+          <td class="score">${player.score}</td>
         `;
         tableBody.appendChild(row);
-      });
 
-      // 觸發滑動動畫
-      Array.from(tableBody.children).forEach(row => {
-        const playerName = row.querySelector('td').textContent;
-        if (positions.has(playerName)) {
-          const oldTop = positions.get(playerName);
-          const newTop = row.offsetTop;
-          const delta = oldTop - newTop;
-
-          row.style.transform = `translateY(${delta}px)`; // 初始化位置
-          requestAnimationFrame(() => {
-            row.style.transition = 'transform 0.5s ease'; // 動畫過渡
-            row.style.transform = 'translateY(0)'; // 恢復到最終位置
-          });
+        // 如果分數有變化，添加動畫
+        const scoreCell = row.querySelector('.score');
+        if (previousData[index] && previousData[index].score !== player.score) {
+          scoreCell.classList.add('score-update');
+          setTimeout(() => {
+            scoreCell.classList.remove('score-update');
+          }, 500);
         }
       });
     }
 
     // 每分鐘自動更新
-    setInterval(fetchPlayerScores, 60000); // 60,000 毫秒 = 1 分鐘
+    setInterval(fetchPlayerScores, 60000);
 
     // 頁面加載時立即抓取一次資料
     window.onload = fetchPlayerScores;
   </script>
 </head>
 <body>
-  <h1 style="text-align: center;">Player Scores</h1>
+  <h1>計分板</h1>
   <table>
     <thead>
       <tr>
-        <th>Player Name</th>
-        <th>Score</th>
+        <th>玩家名稱</th>
+        <th>分數</th>
       </tr>
     </thead>
     <tbody id="scores-table-body">

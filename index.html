@@ -261,6 +261,66 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
+.wish-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .wish-modal h2 {
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .wish-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .wish-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .wish-submit {
+            background-color: #d4af37;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .wish-submit:hover {
+            background-color: #c19b2c;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
     </style>
 
 </head>
@@ -313,18 +373,31 @@
     <button id="answerButton" class="button">答題</button>
     <button id="passButton" class="button">跳過 (-10分)</button>
 </div>
+<div class="modal-overlay" id="wishOverlay"></div>
+    <div class="wish-modal" id="wishModal">
+        <h2>🌟 新年祝福 2025 🌟</h2>
+        <form class="wish-form" id="wishForm">
+            <textarea 
+                class="wish-input" 
+                placeholder="在這裡寫下你的新年期許或祝福..."
+                maxlength="200"
+                required
+            ></textarea>
+            <button type="submit" class="wish-submit">送出祝福</button>
+        </form>
+    </div>
     <script>
         // Google Apps Script 網頁應用程式網址
 const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycby_l9bQ-259HxakJrw34osiRkJMH3WbVnHp2LK4rJoeUdXOV6E9c7qEY-7hjedu_m6KaA/exec'; // 替換為您的網址
 
 // 傳送遊戲結果到 Google Sheets 的函式
 // 修正後的 sendGameResult 函數
-function sendGameResult(playerName, score) { // 改參數名稱以保持一致
+function sendGameResult(playerName, score, wish) { // 改參數名稱以保持一致
 console.log("準備傳送的玩家名字：", playerName);
 console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
     
     const actualPlayerName = playerName || window.playerName || nameInput.value.trim();
-    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&wish=${encodeURIComponent(wish)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
 
     console.log("完整請求 URL:", url); 
     
@@ -651,7 +724,8 @@ function handleSpecialCorner(cornerName) {
     alert("遊戲結束！你完成了 3 個完整迴圈！");
     console.log("遊戲結束時的 playerName:", playerName);  // 加入除錯訊息
     isGameOver = true;
-    sendGameResult(playerName, score);
+    handleGameEnd(); // 在這裡呼叫 handleGameEnd
+    sendGameResult(playerName, score,wish);
     rollDiceButton.disabled = true;
     rollDiceButton.textContent = "遊戲結束";
     return;
@@ -677,6 +751,40 @@ function handleSpecialCorner(cornerName) {
         }, 500);
     }, 1000);
 });
+
+function handleGameEnd() {
+    const wishModal = document.getElementById('wishModal');
+    const wishOverlay = document.getElementById('wishOverlay');
+    const wishForm = document.getElementById('wishForm');
+
+    // 顯示祝福視窗
+    wishModal.style.display = 'block';
+    wishOverlay.style.display = 'block';
+
+    // 處理表單提交
+    wishForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const wishText = this.querySelector('textarea').value;
+        
+        // 儲存祝福到 localStorage
+        const wishes = JSON.parse(localStorage.getItem('newYearWishes') || '[]');
+        wishes.push({
+            name: playerName,
+            wish: wishText,
+            timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('newYearWishes', JSON.stringify(wishes));
+
+        // 關閉視窗並顯示感謝訊息
+        wishModal.style.display = 'none';
+        wishOverlay.style.display = 'none';
+        alert('感謝您的祝福！祝您新年快樂！🎊');
+        
+        // 發送遊戲結果和祝福
+        sendGameResult(playerName, score, wishText);
+    });
+}
 
         function askQuestion(position) {
     if (isGameOver) return;

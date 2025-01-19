@@ -262,6 +262,7 @@
     text-align: center;
 }
 .wish-modal {
+            /* 初始狀態設為隱藏 */
             display: none;
             position: fixed;
             top: 50%;
@@ -272,29 +273,44 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             z-index: 1000;
-            width: 80%;
-            max-width: 500px;
+            /* 固定寬度和高度 */
+            width: 400px;
+            height: 300px;
+            /* 防止調整大小 */
+            resize: none;
+            /* 防止拖曳 */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .wish-modal h2 {
             color: #d4af37;
             text-align: center;
             margin-bottom: 20px;
+            /* 防止文字被選取 */
+            user-select: none;
         }
 
         .wish-form {
             display: flex;
             flex-direction: column;
             gap: 15px;
+            /* 設定固定高度 */
+            height: calc(100% - 60px);
         }
 
         .wish-input {
-            width: 100%;
-            min-height: 100px;
+            /* 設定固定大小 */
+            width: calc(100% - 20px);
+            height: 150px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            resize: vertical;
+            /* 允許文字區域的垂直滾動 */
+            resize: none;
+            overflow-y: auto;
         }
 
         .wish-submit {
@@ -305,6 +321,8 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            /* 保持在底部 */
+            margin-top: auto;
         }
 
         .wish-submit:hover {
@@ -320,7 +338,20 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 999;
+            /* 防止互動 */
+            pointer-events: none;
         }
+
+        /* 當視窗較小時的響應式設計 */
+        @media (max-width: 500px) {
+            .wish-modal {
+                width: 90%;
+                height: 280px;
+            }
+            
+            .wish-input {
+                height: 120px;
+            }
     </style>
 
 </head>

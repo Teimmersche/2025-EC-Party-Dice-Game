@@ -424,43 +424,32 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbywP4H7lBXR
 // 傳送遊戲結果到 Google Sheets 的函式
 // 修正後的 sendGameResult 函數
 function sendGameResult(playerName, score, wish) {
-    // 驗證參數
-    if (!playerName || !score) {
-        console.error('缺少必要參數');
-        return;
-    }
-
-    // 構建請求 URL
-    const params = new URLSearchParams({
-        playerName: playerName,
-        score: score,
-        wish: wish || ''
+    // 確保所有參數都經過正確編碼
+    const encodedParams = new URLSearchParams({
+        playerName: encodeURIComponent(playerName),
+        score: encodeURIComponent(score),
+        wish: encodeURIComponent(wish || '')
     });
 
-    const url = `${googleAppsScriptUrl}?${params.toString()}`;
-    
-    console.log('發送請求到:', url);
+    const url = `${googleAppsScriptUrl}?${encodedParams.toString()}`;
+    console.log('發送請求:', url);
 
-    // 發送請求
     fetch(url)
         .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return response.json();
         })
         .then(data => {
+            console.log('回應:', data);
             if (data.status === 'success') {
-                console.log('資料儲存成功:', data);
                 saveToHistory(playerName, score);
-                loadHistory();
                 alert('遊戲紀錄已成功儲存！');
             } else {
                 throw new Error(data.message || '儲存失敗');
             }
         })
         .catch(error => {
-            console.error('儲存錯誤:', error);
+            console.error('錯誤:', error);
             alert(`儲存失敗: ${error.message}`);
         });
 }

@@ -753,10 +753,8 @@ function handleSpecialCorner(cornerName) {
 
         if (newLaps >= 3) {
     alert("遊戲結束！你完成了 3 個完整迴圈！");
-    console.log("遊戲結束時的 playerName:", playerName);  // 加入除錯訊息
     isGameOver = true;
-    handleGameEnd(); // 在這裡呼叫 handleGameEnd
-    sendGameResult(playerName, score,wish);
+    handleGameEnd(); // 移除wish參數的傳遞
     rollDiceButton.disabled = true;
     rollDiceButton.textContent = "遊戲結束";
     return;
@@ -788,32 +786,19 @@ function handleGameEnd() {
     const wishOverlay = document.getElementById('wishOverlay');
     const wishForm = document.getElementById('wishForm');
 
-    // 顯示祝福視窗
     wishModal.style.display = 'block';
     wishOverlay.style.display = 'block';
 
-    // 處理表單提交
     wishForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const wishText = this.querySelector('textarea').value;
         
-        // 儲存祝福到 localStorage
-        const wishes = JSON.parse(localStorage.getItem('newYearWishes') || '[]');
-        wishes.push({
-            name: playerName,
-            wish: wishText,
-            timestamp: new Date().toISOString()
-        });
-        localStorage.setItem('newYearWishes', JSON.stringify(wishes));
-
-        // 關閉視窗並顯示感謝訊息
+        // 在這裡傳送結果和祝福
+        sendGameResult(playerName, score, wishText);
+        
         wishModal.style.display = 'none';
         wishOverlay.style.display = 'none';
         alert('感謝您的祝福！祝您新年快樂！🎊');
-        
-        // 發送遊戲結果和祝福
-        sendGameResult(playerName, score, wishText);
     });
 }
 

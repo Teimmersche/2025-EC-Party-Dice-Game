@@ -20,17 +20,17 @@
             background-attachment: fixed; /* 背景固定不隨滾動 */
         }
         .board {
-            display: grid;
-            grid-template-columns: repeat(11, minmax(30px, 1fr));
-            grid-template-rows: repeat(11, minmax(30px, 1fr));
-            width: 90vmin;
-            height: 90vmin;
-            margin: 20px;
-            position: relative;
-            gap: 2px;
-            justify-content: center;
-            align-items: center;
-        }
+    display: grid;
+    grid-template-columns: repeat(8, minmax(30px, 1fr));
+    grid-template-rows: repeat(8, minmax(30px, 1fr));
+    width: 90vmin;
+    height: 90vmin;
+    margin: 20px;
+    position: relative;
+    gap: 2px;
+    justify-content: center;
+    align-items: center;
+}
         .node {
             width: 60px; /* 增加寬度 */
             height: 60px; /* 增加高度 */
@@ -574,12 +574,14 @@ passButton.addEventListener('click', () => {
     const viewportHeight = window.innerHeight;
     const smallerDimension = Math.min(viewportWidth, viewportHeight);
 
+    // 調整地圖容器大小
     const boardSize = smallerDimension * 0.9; // 地圖容器占螢幕的 90%
     board.style.width = `${boardSize}px`;
     board.style.height = `${boardSize}px`;
 
-    const gridSize = 8; // 修改為 8x8
-    const nodeSize = boardSize / gridSize;
+    // 計算每個節點的大小
+    const gridSize = Math.sqrt(nodes.length); // 假設節點是正方形排列
+    const nodeSize = boardSize / gridSize; // 節點大小 = 容器大小 / 格數
     nodes.forEach(node => {
         node.style.width = `${nodeSize}px`;
         node.style.height = `${nodeSize}px`;
@@ -595,46 +597,43 @@ adjustBoardSize();
 
 const specialCorners = []; // 儲存特殊角落的索引
 
-const createNodes = () => {
-    const size = 8; // 8x8 的格子
-    const totalNodes = 28; // 節點數量
-    const board = document.querySelector('.board');
-    board.innerHTML = ''; // 清空版面
-
-    let nodeIndex = 0;
-
-    for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
+function createNodes() {
+    // 清空現有的board
+    board.innerHTML = '';
+    
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
             const node = document.createElement('div');
+            const isEdge = (i === 0 || i === 7 || j === 0 || j === 7);
+            const isCorner = (i === 0 && j === 0) || (i === 0 && j === 7) || 
+                           (i === 7 && j === 0) || (i === 7 && j === 7);
 
-            // 判斷是否在外圈並按需求生成節點
-            const isPath =
-                (i === 0 && j < size) || // 上邊
-                (j === size - 1 && i < size) || // 右邊
-                (i === size - 1 && j >= 0) || // 下邊
-                (j === 0 && i >= 0); // 左邊
-
-            // 確保節點按照需求排列
-            if (isPath && nodeIndex < totalNodes) {
+            if (isCorner) {
+                node.classList.add('node', 'corner');
+                node.textContent = '特殊角落';
+                node.dataset.name = '特殊角落';
+                
+                const cornerIndex = calculateNodeIndex(i, j);
+                node.dataset.index = cornerIndex;
+                specialCorners.push(cornerIndex);
+            } else if (isEdge) {
                 node.classList.add('node', 'path');
+                const nodeIndex = calculateNodeIndex(i, j);
                 const categoryNames = ['技術', '生活', '人物', '時事'];
                 const category = categoryNames[nodeIndex % 4];
-
                 node.dataset.category = category;
                 node.dataset.name = category;
-                node.dataset.index = nodeIndex;
                 node.textContent = category;
-
-                nodeIndex++;
+                node.dataset.index = nodeIndex;
             } else {
-                node.classList.add('node', 'hidden-node'); // 非路徑節點隱藏
+                node.classList.add('node', 'hidden-node');
             }
 
             board.appendChild(node);
         }
     }
-};
-        
+}
+
 function adjustNodeStyles() {
     const isSmallScreen = window.innerWidth < 600;
     const nodes = document.querySelectorAll('.node');
@@ -655,13 +654,14 @@ window.addEventListener('resize', adjustNodeStyles);
 // 頁面加載時立即檢查一次
 adjustNodeStyles();
 
-        function calculateNodeIndex(row, col, size) {
-    if (row === 0) return col; // 上邊界
-    if (col === size - 1) return size - 1 + row; // 右邊界
-    if (row === size - 1) return 3 * (size - 1) - col; // 下邊界
-    if (col === 0) return 4 * (size - 1) - row; // 左邊界
-    return null;
-}
+// 修改節點索引計算函數
+        function calculateNodeIndex(row, col) {
+            if (row === 0) return col;                    // 頂部行
+            if (col === 7) return 7 + row;                // 右側列
+            if (row === 7) return 21 - col;               // 底部行
+            if (col === 0) return 28 - row;               // 左側列
+            return null;
+        }
 
         function updatePlayerPosition() {
     const nodes = document.querySelectorAll('.node');
@@ -915,3 +915,4 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 </body>
 </html>
+

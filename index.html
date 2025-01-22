@@ -423,14 +423,15 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzjx__KFUEM
 
 // 傳送遊戲結果到 Google Sheets 的函式
 // 修正後的 sendGameResult 函數
-function sendGameResult(playerName, score, wish) { // 改參數名稱以保持一致
-console.log("準備傳送的玩家名字：", playerName);
-console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
+function sendGameResult(playerName, score, wish) {
+    console.log("準備傳送的玩家名字：", playerName);
+    console.log("準備傳送的祝福：", wish);
     
     const actualPlayerName = playerName || window.playerName || nameInput.value.trim();
-    // 構建 URL（移除 timestamp 參數，因為後端會自動加上）
-    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&wish=${encodeURIComponent(wish)}`;
-
+    
+    // 構建 URL
+    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&wish=${encodeURIComponent(wish || '')}`;
+    
     // 記錄發送的資料
     console.log('準備發送的資料:', {
         playerName: playerName,
@@ -443,14 +444,15 @@ console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?playerName=$
     // 發送請求
     fetch(url, {
         method: 'GET',
-        mode: 'no-cors' // 添加這個選項來處理 CORS 問題
+        mode: 'cors',
+        credentials: 'omit'
     })
     .then(response => {
         console.log('收到原始回應:', response);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.text(); // 改用 text() 因為 no-cors 模式下無法使用 json()
+        return response.text();
     })
     .then(text => {
         console.log('API 回應文字:', text);
@@ -472,7 +474,6 @@ console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?playerName=$
         console.error('API 錯誤:', error);
         saveToHistory(playerName, score);
         loadHistory();
-        // 修改錯誤訊息，使其更友善
         alert('遊戲紀錄已在本地儲存，但可能無法同步到伺服器');
     });
 }
@@ -810,17 +811,21 @@ function handleSpecialCorner(cornerName) {
     }, 1000);
 });
 
+// 修改 handleGameEnd 函數
 function handleGameEnd() {
     const wishModal = document.getElementById('wishModal');
     const wishOverlay = document.getElementById('wishOverlay');
     const wishForm = document.getElementById('wishForm');
-
+    
+    // 移除之前可能存在的事件監聽器
+    wishForm.removeEventListener('submit', handleWishSubmit);
+    
     // 顯示祝福視窗
     wishModal.style.display = 'block';
     wishOverlay.style.display = 'block';
-
-    // 處理表單提交
-    wishForm.addEventListener('submit', function(e) {
+    
+    // 定義表單提交處理函數
+    function handleWishSubmit(e) {
         e.preventDefault();
         
         const wishText = this.querySelector('textarea').value;
@@ -833,7 +838,7 @@ function handleGameEnd() {
             timestamp: new Date().toISOString()
         });
         localStorage.setItem('newYearWishes', JSON.stringify(wishes));
-
+        
         // 關閉視窗並顯示感謝訊息
         wishModal.style.display = 'none';
         wishOverlay.style.display = 'none';
@@ -841,7 +846,10 @@ function handleGameEnd() {
         
         // 發送遊戲結果和祝福
         sendGameResult(playerName, score, wishText);
-    });
+    }
+    
+    // 添加表單提交事件監聽器
+    wishForm.addEventListener('submit', handleWishSubmit);
 }
 
         function askQuestion(position) {

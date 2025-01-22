@@ -489,7 +489,7 @@ passButton.addEventListener('click', () => {
         let score = 100;
         let playerPosition = 0;
         let totalNodesTravelled = 0;
-        const totalNodes = 40;
+        const totalNodes = 28;
         let completedLaps = 0; // 新增變數，追蹤完成的迴圈數
         let isGameOver = false; // 新增變數，遊戲是否結束
         const questions = {
@@ -574,14 +574,12 @@ passButton.addEventListener('click', () => {
     const viewportHeight = window.innerHeight;
     const smallerDimension = Math.min(viewportWidth, viewportHeight);
 
-    // 調整地圖容器大小
     const boardSize = smallerDimension * 0.9; // 地圖容器占螢幕的 90%
     board.style.width = `${boardSize}px`;
     board.style.height = `${boardSize}px`;
 
-    // 計算每個節點的大小
-    const gridSize = Math.sqrt(nodes.length); // 假設節點是正方形排列
-    const nodeSize = boardSize / gridSize; // 節點大小 = 容器大小 / 格數
+    const gridSize = 8; // 修改為 8x8
+    const nodeSize = boardSize / gridSize;
     nodes.forEach(node => {
         node.style.width = `${nodeSize}px`;
         node.style.height = `${nodeSize}px`;
@@ -598,24 +596,27 @@ adjustBoardSize();
 const specialCorners = []; // 儲存特殊角落的索引
 
 const createNodes = () => {
-    for (let i = 0; i < 11; i++) {
-        for (let j = 0; j < 11; j++) {
+    const size = 8; // 修改為 8x8
+    board.innerHTML = ''; // 清空版面
+
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
             const node = document.createElement('div');
-            const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
-            const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
-                             (i === 10 && j === 0) || (i === 10 && j === 10);
+            const isEdge = (i === 0 || i === size - 1 || j === 0 || j === size - 1);
+            const isCorner = (i === 0 && j === 0) || (i === 0 && j === size - 1) ||
+                             (i === size - 1 && j === 0) || (i === size - 1 && j === size - 1);
 
             if (isCorner) {
                 node.classList.add('node', 'corner');
                 node.textContent = '特殊角落';
                 node.dataset.name = '特殊角落';
 
-                const cornerIndex = calculateNodeIndex(i, j);
+                const cornerIndex = calculateNodeIndex(i, j, size);
                 node.dataset.index = cornerIndex;
                 specialCorners.push(cornerIndex);
             } else if (isEdge) {
                 node.classList.add('node', 'path');
-                const nodeIndex = calculateNodeIndex(i, j);
+                const nodeIndex = calculateNodeIndex(i, j, size);
                 const categoryNames = ['技術', '生活', '人物', '時事'];
                 const category = categoryNames[nodeIndex % 4];
                 node.dataset.category = category;
@@ -651,11 +652,11 @@ window.addEventListener('resize', adjustNodeStyles);
 // 頁面加載時立即檢查一次
 adjustNodeStyles();
 
-        function calculateNodeIndex(row, col) {
+        function calculateNodeIndex(row, col, size) {
             if (row === 0) return col;
-            if (col === 10) return 10 + row;
-            if (row === 10) return 30 - col;
-            if (col === 0) return 30 + (10 - row);
+            if (col === size - 1) return size - 1 + row;
+            if (row === size - 1) return 3 * (size - 1) - col;
+            if (col === 0) return 4 * (size - 1) - row;
             return null;
         }
 

@@ -759,8 +759,8 @@ function handleSpecialCorner(cornerName) {
 
         const newLaps = Math.floor(totalNodesTravelled / totalNodes);
 
-        if (newLaps >= 3) {
-    alert("遊戲結束！你完成了 3 個完整迴圈！");
+        if (newLaps >= 1) {
+    alert("遊戲結束！你完成了一個完整迴圈！");
     isGameOver = true;
     handleGameEnd(); // 移除wish參數的傳遞
     rollDiceButton.disabled = true;

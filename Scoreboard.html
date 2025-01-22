@@ -49,15 +49,24 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const data = await response.json();
-                console.log('收到的資料:', data);
+                const jsonResponse = await response.json();
+                console.log('收到的資料:', jsonResponse);
                 
-                if (!Array.isArray(data) || data.length === 0) {
+                // 檢查 API 回應是否成功
+                if (jsonResponse.status !== "success" || !jsonResponse.data) {
+                    throw new Error('API 回應格式錯誤');
+                }
+
+                // 將資料轉換成陣列（如果不是陣列的話）
+                const data = Array.isArray(jsonResponse.data) ? 
+                    jsonResponse.data : Object.values(jsonResponse.data);
+                
+                if (data.length === 0) {
                     scoreboardElement.innerHTML = '沒有資料可顯示';
                     return;
                 }
                 
-                // 排序資料（假設有 score 欄位）
+                // 排序資料
                 data.sort((a, b) => b.score - a.score);
                 
                 // 更新 HTML
@@ -74,7 +83,7 @@
                             ${data.map((item, index) => `
                                 <tr>
                                     <td>${index + 1}</td>
-                                    <td>${item.player || '未知玩家'}</td>
+                                    <td>${item.playerName || '未知玩家'}</td>
                                     <td>${item.score || 0}</td>
                                 </tr>
                             `).join('')}

@@ -596,44 +596,45 @@ adjustBoardSize();
 const specialCorners = []; // 儲存特殊角落的索引
 
 const createNodes = () => {
-    const size = 8; // 8x8 格子
+    const size = 8; // 8x8 的格子
+    const totalNodes = 28; // 節點數量
+    const board = document.querySelector('.board');
     board.innerHTML = ''; // 清空版面
+
+    let nodeIndex = 0;
 
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
             const node = document.createElement('div');
-            const isEdge = (i === 0 || i === size - 1 || j === 0 || j === size - 1); // 判斷是否為外圈
-            const isCorner = (i === 0 && j === 0) || (i === 0 && j === size - 1) ||
-                             (i === size - 1 && j === 0) || (i === size - 1 && j === size - 1);
 
-            if (isEdge) {
-                if (isCorner) {
-                    node.classList.add('node', 'corner');
-                    node.textContent = '特殊角落';
-                    node.dataset.name = '特殊角落';
+            // 判斷是否在外圈並按需求生成節點
+            const isPath =
+                (i === 0 && j < size) || // 上邊
+                (j === size - 1 && i < size) || // 右邊
+                (i === size - 1 && j >= 0) || // 下邊
+                (j === 0 && i >= 0); // 左邊
 
-                    const cornerIndex = calculateNodeIndex(i, j, size);
-                    node.dataset.index = cornerIndex;
-                    specialCorners.push(cornerIndex);
-                } else {
-                    node.classList.add('node', 'path');
-                    const nodeIndex = calculateNodeIndex(i, j, size);
-                    const categoryNames = ['技術', '生活', '人物', '時事'];
-                    const category = categoryNames[nodeIndex % 4];
-                    node.dataset.category = category;
-                    node.dataset.name = category;
-                    node.textContent = category;
-                    node.dataset.index = nodeIndex;
-                }
+            // 確保節點按照需求排列
+            if (isPath && nodeIndex < totalNodes) {
+                node.classList.add('node', 'path');
+                const categoryNames = ['技術', '生活', '人物', '時事'];
+                const category = categoryNames[nodeIndex % 4];
+
+                node.dataset.category = category;
+                node.dataset.name = category;
+                node.dataset.index = nodeIndex;
+                node.textContent = category;
+
+                nodeIndex++;
             } else {
-                node.classList.add('node', 'hidden-node'); // 隱藏內部非外圈的格子
+                node.classList.add('node', 'hidden-node'); // 非路徑節點隱藏
             }
 
             board.appendChild(node);
         }
     }
 };
-
+        
 function adjustNodeStyles() {
     const isSmallScreen = window.innerWidth < 600;
     const nodes = document.querySelectorAll('.node');
@@ -655,12 +656,12 @@ window.addEventListener('resize', adjustNodeStyles);
 adjustNodeStyles();
 
         function calculateNodeIndex(row, col, size) {
-            if (row === 0) return col; // 上邊界
-            if (col === size - 1) return size - 1 + row; // 右邊界
-            if (row === size - 1) return 3 * (size - 1) - col; // 下邊界
-            if (col === 0) return 4 * (size - 1) - row; // 左邊界
-            return null;
-        }
+    if (row === 0) return col; // 上邊界
+    if (col === size - 1) return size - 1 + row; // 右邊界
+    if (row === size - 1) return 3 * (size - 1) - col; // 下邊界
+    if (col === 0) return 4 * (size - 1) - row; // 左邊界
+    return null;
+}
 
         function updatePlayerPosition() {
     const nodes = document.querySelectorAll('.node');

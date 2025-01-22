@@ -428,25 +428,52 @@ console.log("準備傳送的玩家名字：", playerName);
 console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
     
     const actualPlayerName = playerName || window.playerName || nameInput.value.trim();
-    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&wish=${encodeURIComponent(wish)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
+    // 構建 URL（移除 timestamp 參數，因為後端會自動加上）
+    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&wish=${encodeURIComponent(wish)}`;
 
-    console.log("完整請求 URL:", url); 
+    // 記錄發送的資料
+    console.log('準備發送的資料:', {
+        playerName: playerName,
+        score: score,
+        wish: wish
+    });
     
+    console.log('發送請求到:', url);
+    
+    // 發送請求
     fetch(url, {
         method: 'GET',
+        mode: 'no-cors' // 添加這個選項來處理 CORS 問題
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('API 回應:', data);
-        saveToHistory(actualPlayerName, score);
-        loadHistory();
-        alert('遊戲紀錄已成功儲存！');
+    .then(response => {
+        console.log('收到原始回應:', response);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text(); // 改用 text() 因為 no-cors 模式下無法使用 json()
+    })
+    .then(text => {
+        console.log('API 回應文字:', text);
+        try {
+            const data = text ? JSON.parse(text) : {};
+            console.log('解析後的 API 回應:', data);
+            
+            saveToHistory(playerName, score);
+            loadHistory();
+            alert('遊戲紀錄已成功儲存！');
+        } catch (e) {
+            console.log('回應不是 JSON 格式，但請求可能已成功');
+            saveToHistory(playerName, score);
+            loadHistory();
+            alert('遊戲紀錄已儲存！');
+        }
     })
     .catch(error => {
         console.error('API 錯誤:', error);
-        saveToHistory(actualPlayerName, score);
+        saveToHistory(playerName, score);
         loadHistory();
-        alert(`儲存失敗: ${error.message}`);
+        // 修改錯誤訊息，使其更友善
+        alert('遊戲紀錄已在本地儲存，但可能無法同步到伺服器');
     });
 }
 

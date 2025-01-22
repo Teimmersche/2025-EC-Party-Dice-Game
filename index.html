@@ -433,21 +433,28 @@ console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?playerName=$
     console.log("完整請求 URL:", url); 
     
     fetch(url, {
-        method: 'GET',
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('API 回應:', data);
-        saveToHistory(actualPlayerName, score);
-        loadHistory();
-        alert('遊戲紀錄已成功儲存！');
-    })
-    .catch(error => {
-        console.error('API 錯誤:', error);
-        saveToHistory(actualPlayerName, score);
-        loadHistory();
-        alert(`儲存失敗: ${error.message}`);
-    });
+       method: 'GET',
+       mode: 'cors'
+   })
+   .then(response => {
+       if (!response.ok) {
+           throw new Error(`HTTP error! status: ${response.status}`);
+       }
+       return response.json();
+   })
+   .then(data => {
+       console.log('成功:', data);
+       saveToHistory(playerName, score);
+       loadHistory();
+       alert('遊戲紀錄已成功儲存！');
+   })
+   .catch(error => {
+       console.error('錯誤:', error);
+       // 儲存到本地以防API失敗
+       saveToHistory(playerName, score);
+       loadHistory();
+       alert(`儲存失敗: ${error.message}`);
+   });
 }
 
         const board = document.getElementById('board');

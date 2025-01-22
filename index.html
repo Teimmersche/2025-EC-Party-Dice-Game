@@ -419,46 +419,34 @@
     </div>
     <script>
         // Google Apps Script 網頁應用程式網址
-const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbxolcB6pJchgf9S6hQ5SEx3a6ypVFZVBbfdx3PoCW5U7H2cV38lpxRnuJ2iY8WJHBfIGA/exec'; // 替換為您的網址
+const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzjx__KFUEMfidE6c0GJpmLV1eaGhXE69UnvXz818J1rq6_8CakGtgpCktol1_tBnvYUQ/exec'; // 替換為您的網址
 
-// 修改 sendGameResult 函數以確保正確處理 wish 參數
-function sendGameResult(playerName, score, wishText) {
-    console.log("準備傳送的完整資料：", { playerName, score, wish: wishText }); // 調試日誌
+// 傳送遊戲結果到 Google Sheets 的函式
+// 修正後的 sendGameResult 函數
+function sendGameResult(playerName, score, wish) { // 改參數名稱以保持一致
+console.log("準備傳送的玩家名字：", playerName);
+console.log("準備傳送的完整 URL：", `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&timestamp=${encodeURIComponent(new Date().toISOString())}`);
     
-    // 確保所有參數都被正確編碼
-    const params = new URLSearchParams({
-        playerName: playerName || '',
-        score: score || 0,
-        wish: wishText || '',
-        timestamp: new Date().toISOString()
-    });
+    const actualPlayerName = playerName || window.playerName || nameInput.value.trim();
+    const url = `${googleAppsScriptUrl}?playerName=${encodeURIComponent(playerName)}&score=${encodeURIComponent(score)}&wish=${encodeURIComponent(wish)}&timestamp=${encodeURIComponent(new Date().toISOString())}`;
 
-    const url = `${googleAppsScriptUrl}?${params.toString()}`;
-    console.log('完整請求 URL:', url); // 調試日誌
-
+    console.log("完整請求 URL:", url); 
+    
     fetch(url, {
         method: 'GET',
-        mode: 'cors',
-        credentials: 'omit'
     })
-    .then(response => {
-        console.log('服務器響應:', response); // 調試日誌
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text();
-    })
-    .then(text => {
-        console.log('服務器返回文本:', text); // 調試日誌
-        saveToHistory(playerName, score);
+    .then(response => response.json())
+    .then(data => {
+        console.log('API 回應:', data);
+        saveToHistory(actualPlayerName, score);
         loadHistory();
-        console.log('本地歷史記錄已更新'); // 調試日誌
+        alert('遊戲紀錄已成功儲存！');
     })
     .catch(error => {
-        console.error('發送數據時出錯:', error);
-        saveToHistory(playerName, score);
+        console.error('API 錯誤:', error);
+        saveToHistory(actualPlayerName, score);
         loadHistory();
-        alert('遊戲紀錄已在本地儲存，但可能無法同步到伺服器');
+        alert(`儲存失敗: ${error.message}`);
     });
 }
 
@@ -768,6 +756,7 @@ function handleSpecialCorner(cornerName) {
     console.log("遊戲結束時的 playerName:", playerName);  // 加入除錯訊息
     isGameOver = true;
     handleGameEnd(); // 在這裡呼叫 handleGameEnd
+    sendGameResult(playerName, score,wish);
     rollDiceButton.disabled = true;
     rollDiceButton.textContent = "遊戲結束";
     return;
@@ -794,30 +783,20 @@ function handleSpecialCorner(cornerName) {
     }, 1000);
 });
 
-// 修改 handleGameEnd 函數
 function handleGameEnd() {
     const wishModal = document.getElementById('wishModal');
     const wishOverlay = document.getElementById('wishOverlay');
     const wishForm = document.getElementById('wishForm');
-    const wishInput = wishForm.querySelector('textarea');
 
     // 顯示祝福視窗
     wishModal.style.display = 'block';
     wishOverlay.style.display = 'block';
-     
-    // 移除任何現有的事件監聽器
-    const clonedForm = wishForm.cloneNode(true);
-    wishForm.parentNode.replaceChild(clonedForm, wishForm);
-    
-    // 重新獲取新的表單引用
-    const newWishForm = document.getElementById('wishForm');
-    const newWishInput = newWishForm.querySelector('textarea');
 
-    newWishForm.addEventListener('submit', function(e) {
+    // 處理表單提交
+    wishForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const wishText = newWishInput.value.trim();
-        console.log("提交的祝福內容:", wishText); // 調試日誌
+        const wishText = this.querySelector('textarea').value;
         
         // 儲存祝福到 localStorage
         const wishes = JSON.parse(localStorage.getItem('newYearWishes') || '[]');
@@ -828,14 +807,13 @@ function handleGameEnd() {
         });
         localStorage.setItem('newYearWishes', JSON.stringify(wishes));
 
-        // 關閉視窗
+        // 關閉視窗並顯示感謝訊息
         wishModal.style.display = 'none';
         wishOverlay.style.display = 'none';
+        alert('感謝您的祝福！祝您新年快樂！🎊');
         
         // 發送遊戲結果和祝福
         sendGameResult(playerName, score, wishText);
-        
-        alert('感謝您的祝福！祝您新年快樂！🎊');
     });
 }
 

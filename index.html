@@ -234,6 +234,75 @@
                 font-size: 0.75rem;
             }
         }
+        .wish-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 400px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .wish-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .wish-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            resize: none;
+        }
+
+        .wish-submit {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .wish-submit:hover {
+            background-color: #2d3748;
+        }
+
+        .hidden-node {
+            visibility: hidden;
+            background: transparent;
+            border: none;
+        }
+
+        .node.corner {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .node[data-category="技術"] { background: #60a5fa; }
+        .node[data-category="生活"] { background: #34d399; }
+        .node[data-category="人物"] { background: #f472b6; }
+        .node[data-category="時事"] { background: #fbbf24; }
     </style>
 </head>
 <body>
@@ -286,6 +355,16 @@
                 <button id="answerButton" class="choice-button">答題</button>
                 <button id="passButton" class="choice-button">跳過 (-10分)</button>
             </div>
+        </div>
+
+        <!-- 願望牆 -->
+        <div class="modal-overlay" id="wishOverlay"></div>
+        <div class="wish-modal" id="wishModal">
+            <h2 class="title">🌟 新年祝福 2025 🌟</h2>
+            <form class="wish-form" id="wishForm">
+                <textarea class="wish-input" placeholder="在這裡寫下你的新年期許或祝福..." maxlength="200" required></textarea>
+                <button type="submit" class="wish-submit">送出祝福</button>
+            </form>
         </div>
     </div>
     <script>
@@ -343,20 +422,20 @@ const answerButton = document.getElementById('answerButton');
 const passButton = document.getElementById('passButton');
 
 document.getElementById('startGame').addEventListener('click', () => {
-    playerName = nameInput.value.trim();
-    
-    if (!playerName || playerName.length > 20 || !/^[\w\u4e00-\u9fa5]+$/.test(playerName)) {
-        alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
-        return;
-    }
-    
-    document.querySelector('.welcome-screen').style.display = 'none';
-    document.querySelector('.game-screen').style.display = 'block';
-    
-    createNodes();
-    updatePlayerPosition();
-    updateDiceFace(1);
-});
+            playerName = nameInput.value.trim();
+            
+            if (!playerName || playerName.length > 20 || !/^[\w\u4e00-\u9fa5]+$/.test(playerName)) {
+                alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
+                return;
+            }
+            
+            document.querySelector('.game-card').style.display = 'none';
+            document.querySelector('.game-screen').style.display = 'block';
+            
+            createNodes();
+            updatePlayerPosition();
+            updateDiceFace(1);
+        });
         
 // 玩家選擇答題
 answerButton.addEventListener('click', () => {

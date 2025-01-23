@@ -818,8 +818,8 @@ const createNodes = () => {
                     node.textContent = '員工旅遊';
                     node.dataset.name = 'travel';
                 } else {
-                    node.textContent = '特殊角落';
-                    node.dataset.name = '特殊角落';
+                    node.textContent = '幸運大轉盤';
+                    node.dataset.name = 'luckyWheel';
                 }
                 
                 const cornerIndex = calculateNodeIndex(i, j);
@@ -937,9 +937,37 @@ function handleSpecialCorner(cornerName) {
         return;
     }
 
-    // 其他特殊角落保持原有行為
-    alert("歡迎來到特殊角落！你獲得了 50 分獎勵！");
-    score += 50;
+    if (cornerName === 'luckWheel') {
+        showLuckyWheel();
+        return;
+    }
+
+    function showLuckyWheel() {
+    const wheelRewards = [
+        { text: '安慰紅包 +5分', value: 5 },
+        { text: '小紅包 +10分' , value: 10 },
+        { text: '中紅包 +20分', value: 20 },
+        { text: '大紅包 +30分', value: 30 },
+        { text: '特大紅包 +50分', value: 50 },
+        { text: '特級紅包 分數翻倍！', value: 'double' }
+    ];
+
+    // 隨機選擇獎勵
+    const reward = wheelRewards[Math.floor(Math.random() * wheelRewards.length)];
+
+    // 根據不同獎勵類型處理
+    switch (reward.value) {
+        case 'double':
+            score *= 2;
+            break;
+        default:
+            score += reward.value;
+    }
+
+    alert(`幸運大轉盤！${reward.text}`);
+    scoreDisplay.textContent = score;
+    rollDiceButton.disabled = false;
+}
     
     // 更新分數顯示
     scoreDisplay.textContent = score;

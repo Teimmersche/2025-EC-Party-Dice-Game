@@ -946,21 +946,37 @@ function handleGameEnd() {
     scoreDisplay.textContent = `最終得分：${score}分`;
     wishForm.appendChild(scoreDisplay);
     
-    // 只添加重新開始按鈕
+    // 創建按鈕容器
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.justifyContent = 'space-between';
+    buttonContainer.style.marginTop = '20px';
+    
+    // 創建重新開始按鈕
     const restartButton = document.createElement('button');
-    restartButton.id = 'restartButton';
     restartButton.textContent = '重新開始遊戲';
     restartButton.className = 'wish-submit';
     restartButton.style.backgroundColor = '#4CAF50';
+    restartButton.style.marginRight = '10px';
     restartButton.onclick = () => {
         sessionStorage.removeItem('gameState');
         window.location.reload();
     };
     
-    wishForm.appendChild(restartButton);
+    // 創建提交成績按鈕
+    const submitButton = document.createElement('button');
+    submitButton.textContent = '提交成績';
+    submitButton.className = 'wish-submit';
+    submitButton.onclick = () => {
+        sendGameResult(playerName, score, '');
+    };
     
-    // 自動記錄成績
-    sendGameResult(playerName, score, '');
+    // 將按鈕添加到容器中
+    buttonContainer.appendChild(restartButton);
+    buttonContainer.appendChild(submitButton);
+    
+    // 將按鈕容器添加到表單中
+    wishForm.appendChild(buttonContainer);
     
     wishModal.style.display = 'block';
     wishOverlay.style.display = 'block';

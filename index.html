@@ -1,253 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2025尾牙遊戲(測試版)</title>
+    <title>2025尾牙遊戲</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
-               :root {
-            --primary: #6366f1;
-            --secondary: #8b5cf6;
-            --accent: #f472b6;
-            --background: #f8fafc;
-        }
-
         body {
-            background: linear-gradient(135deg, #f6f8fc 0%, #e2e8f0 100%);
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            min-height: 100vh;
+            background-color: #f8f9fa;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #2c3e50;
+            line-height: 1.6;
         }
 
-        .welcome-screen {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+        .container {
             max-width: 800px;
             margin: 2rem auto;
             padding: 2rem;
         }
 
-        .game-title {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 2.5rem;
-            font-weight: bold;
+        .game-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .title {
+            font-size: 1.75rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
             text-align: center;
-            margin-bottom: 2rem;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 1rem;
+        }
+
+        .input-group {
+            margin: 1.5rem 0;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
         }
 
         .button {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background-color: #4a5568;
             color: white;
             padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
+            border-radius: 6px;
             border: none;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+            width: 100%;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
 
-        .button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        .button:hover {
+            background-color: #2d3748;
         }
 
-        .board {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 0.5rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .node {
-            aspect-ratio: 1;
-            border-radius: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            transition: transform 0.2s;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .node[data-category="技術"] {
-            background: linear-gradient(135deg, #60a5fa, #3b82f6);
-            color: white;
-        }
-
-        .node[data-category="生活"] {
-            background: linear-gradient(135deg, #34d399, #10b981);
-            color: white;
-        }
-
-        .node[data-category="人物"] {
-            background: linear-gradient(135deg, #f472b6, #ec4899);
-            color: white;
-        }
-
-        .node[data-category="時事"] {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: white;
-        }
-
-        .node.corner {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            color: white;
-            font-weight: 700;
-        }
-
-        .dice-container {
-            background: white;
+        .rules-section {
+            margin-top: 2rem;
             padding: 1.5rem;
-            border-radius: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .rules-title {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .rules-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rules-list li {
+            margin: 0.75rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .rules-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #4a5568;
+        }
+
+        .question-modal {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-title {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .choice-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
             margin-top: 1.5rem;
         }
 
-        .game-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            padding: 1.5rem;
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
+        .choice-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: #f8f9fa;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .info-item {
-            text-align: center;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            background: var(--background);
-        }
-
-        .question-container {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            max-width: 600px;
-            width: 90%;
-            margin: auto;
-        }
-
-        .player {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, var(--accent), var(--primary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .choice-button:hover {
+            background: #4a5568;
             color: white;
-            font-weight: bold;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
         @media (max-width: 640px) {
-            .node {
-                font-size: 0.75rem;
-                padding: 0.25rem;
+            .container {
+                padding: 1rem;
+                margin: 1rem;
             }
         }
     </style>
 
 </head>
-    <body>
-    <!-- 歡迎畫面 -->
-    <div class="welcome-screen">
-        <h1>2025尾牙遊戲(測試版)</h1>
-        <div class="controls">
-            <p>玩家名稱：<input type="text" id="name" placeholder="輸入名字" /></p>
-            <button class="button" id="startGame">開始遊戲</button>
-        </div>
-        <div class="game-rules">
-            <h2>遊戲規則</h2>
-            <ul>
-                <li>玩家從起點開始，擲骰子決定前進步數</li>
-                <li>落在問答格需回答該類別題目：答對+10分，答錯-10分</li>
-                <li>可選擇跳過回答，但會扣10分</li>
-                <li>特殊角落可獲得50分</li>
-                <li>繞完一圈即可結束遊戲</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- 遊戲主畫面 (預設隱藏) -->
-    <div class="game-screen" style="display: none;">
-  <div class="game-container">
-    <!-- 左側資訊面板 -->
-    <div class="game-info-panel">
-      <div class="text-center">
-        <h3 class="font-bold mb-2">遊戲資訊</h3>
-        <!-- 遊戲資訊卡片 -->
-        <div class="space-y-2">
-          <div class="bg-blue-50 p-2 rounded">
-            <div>當前分數</div>
-            <div id="score" class="text-xl font-bold">100</div>
-          </div>
-          <div class="bg-green-50 p-2 rounded">
-            <div>擲骰結果</div>
-            <div id="diceResult" class="text-xl font-bold">-</div>
-          </div>
-          <div class="bg-purple-50 p-2 rounded">
-            <div>擲骰次數</div>
-            <div id="rollCount" class="text-xl font-bold">0</div>
-          </div>
-        </div>
-        
-        <!-- 骰子區域 -->
-        <div class="mt-4">
-          <div class="dice-container">
-            <div class="dice" id="dice">
-              <div class="dice-face" id="diceFace"></div>
+<body>
+    <div class="container">
+        <div class="game-card">
+            <h1 class="title">2025尾牙遊戲</h1>
+            
+            <div class="input-group">
+                <label class="input-label">玩家名稱</label>
+                <input type="text" class="input-field" placeholder="請輸入您的名字">
+                <button class="button">開始遊戲</button>
             </div>
-          </div>
-          <button class="button mt-4 w-full" id="rollDice">擲骰</button>
+
+            <div class="rules-section">
+                <h2 class="rules-title">遊戲規則</h2>
+                <ul class="rules-list">
+                    <li>玩家從起點開始，擲骰子決定前進步數</li>
+                    <li>落在問答格需回答該類別題目：答對+10分，答錯-10分</li>
+                    <li>可選擇跳過回答，但會扣10分</li>
+                    <li>特殊角落可獲得50分</li>
+                    <li>繞完一圈即可結束遊戲</li>
+                </ul>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <!-- 遊戲板區域 -->
-    <div class="flex-1">
-      <div class="board" id="board"></div>
+        <div class="question-modal" style="display: none;">
+            <h2 class="question-title">是否答題？</h2>
+            <div class="choice-buttons">
+                <button class="choice-button">答題</button>
+                <button class="choice-button">跳過 (-10分)</button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-
-    </div>
-    <div class="question-container" id="questionContainer">
-        <h2 id="questionText">問題</h2>
-        <div id="options"></div>
-    </div>
-        <div class="question-container" id="choiceContainer">
-    <h2>是否答題？</h2>
-    <button id="answerButton" class="button">答題</button>
-    <button id="passButton" class="button">跳過 (-10分)</button>
-</div>
-<div class="modal-overlay" id="wishOverlay"></div>
-    <div class="wish-modal" id="wishModal">
-        <h2>🌟 新年祝福 2025 🌟</h2>
-        <form class="wish-form" id="wishForm">
-            <textarea 
-                class="wish-input" 
-                placeholder="在這裡寫下你的新年期許或祝福..."
-                maxlength="200"
-                required
-            ></textarea>
-            <button type="submit" class="wish-submit">送出祝福</button>
-        </form>
-    </div>
+</body>
+</html>
     <script>
         // Google Apps Script 網頁應用程式網址
 const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbywP4H7lBXRaSjXG-IxbWx_5qf7Z24XgGqAkd-d8U6Qrwkli0HShRA6ypIrt19E1akcSA/exec'; // 替換為您的網址

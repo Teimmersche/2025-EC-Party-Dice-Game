@@ -493,12 +493,10 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyem6VpFwrN
 
 // 修改 sendGameResult 函數以確保正確處理 wish 參數
 async function sendGameResult(playerName, score, wishText) {
-    // 創建加載提示
     const loadingMessage = createLoadingMessage();
     document.body.appendChild(loadingMessage);
 
     try {
-        // 準備數據
         const data = {
             playerName: playerName,
             score: score,
@@ -506,11 +504,9 @@ async function sendGameResult(playerName, score, wishText) {
             timestamp: new Date().toISOString()
         };
 
-        // 使用 URL 搜索參數
         const params = new URLSearchParams(data);
         const url = `${googleAppsScriptUrl}?${params.toString()}`;
 
-        // 設置請求選項
         const requestOptions = {
             method: 'GET',
             mode: 'cors',
@@ -521,15 +517,7 @@ async function sendGameResult(playerName, score, wishText) {
             referrerPolicy: 'no-referrer'
         };
 
-        // 添加超時處理
-        const timeout = 30000;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), timeout);
-        requestOptions.signal = controller.signal;
-
-        // 發送請求
         const response = await fetch(url, requestOptions);
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -538,23 +526,77 @@ async function sendGameResult(playerName, score, wishText) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            // 顯示成功消息
-            loadingMessage.textContent = '儲存成功！正在前往排行榜...';
+            loadingMessage.textContent = '成績儲存成功！';
             loadingMessage.style.background = 'rgba(0, 128, 0, 0.8)';
             
             // 延遲跳轉
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            window.location.href = 'result.html';
+            setTimeout(() => {
+                window.location.href = 'result.html';
+            }, 1000);
         } else {
             throw new Error(result.message || '伺服器回應異常');
         }
 
     } catch (error) {
         console.error('Error:', error);
-        handleError(error.message, loadingMessage);
+        loadingMessage.textContent = `儲存失敗：${error.message}\n點擊重試`;
+        loadingMessage.style.background = 'rgba(255, 0, 0, 0.8)';
+        loadingMessage.style.cursor = 'pointer';
+        
+        loadingMessage.onclick = () => {
+            document.body.removeChild(loadingMessage);
+            sendGameResult(playerName, score, wishText);
+        };
     }
 }
 
+// 修改 handleGameEnd 函數
+function handleGameEnd() {
+    const wishModal = document.getElementById('wishModal');
+    const wishOverlay = document.getElementById('wishOverlay');
+    const wishForm = document.getElementById('wishForm');
+    
+    wishForm.innerHTML = '';
+    
+    const modalTitle = wishModal.querySelector('h2');
+    modalTitle.textContent = '遊戲結束！';
+    
+    const scoreDisplay = document.createElement('div');
+    scoreDisplay.style.fontSize = '24px';
+    scoreDisplay.style.marginBottom = '20px';
+    scoreDisplay.style.textAlign = 'center';
+    scoreDisplay.textContent = `最終得分：${score}分`;
+    wishForm.appendChild(scoreDisplay);
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.justifyContent = 'space-between';
+    buttonContainer.style.marginTop = '20px';
+    
+    const restartButton = document.createElement('button');
+    restartButton.textContent = '重新開始遊戲';
+    restartButton.className = 'wish-submit';
+    restartButton.style.backgroundColor = '#4CAF50';
+    restartButton.style.marginRight = '10px';
+    restartButton.onclick = () => {
+        sessionStorage.removeItem('gameState');
+        window.location.reload();
+    };
+    
+    const submitButton = document.createElement('button');
+    submitButton.textContent = '提交成績';
+    submitButton.className = 'wish-submit';
+    submitButton.onclick = () => {
+        sendGameResult(playerName, score, '');
+    };
+    
+    buttonContainer.appendChild(restartButton);
+    buttonContainer.appendChild(submitButton);
+    wishForm.appendChild(buttonContainer);
+    
+    wishModal.style.display = 'block';
+    wishOverlay.style.display = 'block';
+}
 // 創建加載提示元素
 function createLoadingMessage() {
     const loadingMessage = document.createElement('div');

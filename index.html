@@ -71,15 +71,11 @@
         .controls, .scoreboard {
             text-align: center;
         }
-        .button {
-            margin: 10px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+        /* 調整按鈕大小 */
+.button {
+    padding: 8px 16px;
+    font-size: 0.9em;
+}
         .button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
@@ -157,15 +153,12 @@
             background-color: #007bff;
             color: white;
         }
-        .dice {
-            width: 50px;
-            height: 50px;
-            position: relative;
-            margin: 10px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        /* 調整骰子大小 */
+.dice {
+    width: 40px;
+    height: 40px;
+    margin: 5px;
+}
         .dice-face {
             width: 100%;
             height: 100%;
@@ -190,24 +183,29 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 60%;
-    height: 60%;
+    /* 縮小寬度和高度 */
+    width: 40%;
+    height: 40%;
+    /* 加上最大寬度和高度限制 */
+    max-width: 200px;
+    max-height: 200px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    /* 縮小字體 */
+    font-size: 0.9em;
 }
 
+/* 調整分數顯示 */
 .score-display {
-    font-size: 1.5em;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
+    font-size: 1.2em;
+    margin-bottom: 5px;
 }
 
 .dice-section {

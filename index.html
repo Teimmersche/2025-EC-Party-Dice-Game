@@ -472,6 +472,51 @@
     75% { transform: translateX(-5px); }
     100% { transform: translateX(0); }
 }
+            .modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#luckyWheelCanvas {
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+#spinWheelButton {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+#spinWheelButton:hover {
+    background-color: #45a049;
+}
+
+#spinWheelButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
     </style>
 
 </head>
@@ -990,80 +1035,115 @@ function handleSpecialCorner(cornerName) {
     const spinButton = document.getElementById('spinWheelButton');
 
     const rewards = [
-        { text: '安慰紅包 +5分', value: 5 },
-        { text: '小紅包 +10分' , value: 10 },
-        { text: '中紅包 +20分', value: 20 },
-        { text: '大紅包 +30分', value: 30 },
-        { text: '特大紅包 +50分', value: 50 },
-        { text: '特級紅包 分數翻倍！', value: 'double' }
+        { text: '安慰紅包 +5分', value: 5, color: '#FF6B6B' },
+        { text: '小紅包 +10分', value: 10, color: '#4ECDC4' },
+        { text: '中紅包 +20分', value: 20, color: '#45B7D1' },
+        { text: '大紅包 +30分', value: 30, color: '#96CEB4' },
+        { text: '特大紅包 +50分', value: 50, color: '#FFEEAD' },
+        { text: '特級紅包 翻倍！', value: 'double', color: '#D4731C' }
     ];
 
+    let currentRotation = 0;
+
     function drawWheel() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const radius = canvas.width / 2 - 10;
+        const radius = Math.min(centerX, centerY) - 10;
 
         rewards.forEach((reward, index) => {
             const startAngle = (index * Math.PI * 2) / rewards.length;
             const endAngle = ((index + 1) * Math.PI * 2) / rewards.length;
 
+            // 繪製扇形
             ctx.beginPath();
             ctx.moveTo(centerX, centerY);
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
             ctx.closePath();
-            ctx.fillStyle = 'radial-gradient(circle, #333, #111)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = reward.color;
             ctx.fill();
+            ctx.strokeStyle = '#FFF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
+            // 繪製文字
             ctx.save();
             ctx.translate(centerX, centerY);
             ctx.rotate(startAngle + (endAngle - startAngle) / 2);
-            ctx.textAlign = "right";
-            ctx.fillStyle = "white";
-            ctx.font = "bold 16px Arial";
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px Arial';
             ctx.fillText(reward.text, radius - 20, 0);
             ctx.restore();
         });
 
-    function spinWheel() {
-        spinButton.addEventListener('click', () => {
-            spinButton.classList.add('button-clicked');
-            setTimeout(() => {
-                spinButton.classList.remove('button-clicked');
-            }, 300);
-            spinButton.disabled = true;
+        // 繪製中心圓點
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 15, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFD700';
+        ctx.fill();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-            const rotation = Math.random() * 360;
-            const spinDuration = 3000;
-
-            canvas.style.transition = `transform ${spinDuration}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
-            canvas.style.transform = `rotate(${rotation + 720}deg)`;
-
-            setTimeout(() => {
-                const selectedIndex = Math.floor(((rotation % 360) / 360) * rewards.length);
-                const reward = rewards[selectedIndex];
-
-                if (reward.value === 'double') {
-                    score *= 2;
-                } else {
-                    score += reward.value;
-                }
-
-                alert(`你轉到了：${reward.text}`);
-                scoreDisplay.textContent = score;
-                spinButton.disabled = false;
-                modal.style.display = 'none';
-                rollDiceButton.disabled = false;
-            }, spinDuration);
-        });
-
-        drawWheel();
-        modal.style.display = 'flex';
-        spinButton.onclick = spinWheel;
-    }}
+        // 繪製指針
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - radius - 10);
+        ctx.lineTo(centerX - 10, centerY - radius + 10);
+        ctx.lineTo(centerX + 10, centerY - radius + 10);
+        ctx.closePath();
+        ctx.fillStyle = '#FF0000';
+        ctx.fill();
     }
 
-    drawWheel(); // 確保輪盤繪製完成
+    function spinWheel() {
+        const minSpins = 5;
+        const extraSpins = Math.random() * 3;
+        const totalSpins = minSpins + extraSpins;
+        const targetRotation = totalSpins * 360 + Math.random() * 360;
+        const duration = 5000;
+        const startTime = performance.now();
+        let animationFrame;
+
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            currentRotation = targetRotation * easeOut;
+            
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            if (progress < 1) {
+                animationFrame = requestAnimationFrame(animate);
+            } else {
+                const finalRotation = currentRotation % 360;
+                const selectedIndex = Math.floor((360 - finalRotation) / (360 / rewards.length));
+                const reward = rewards[selectedIndex];
+
+                setTimeout(() => {
+                    if (reward.value === 'double') {
+                        score *= 2;
+                    } else {
+                        score += reward.value;
+                    }
+
+                    alert(`恭喜！你抽中了：${reward.text}`);
+                    scoreDisplay.textContent = score;
+                    modal.style.display = 'none';
+                    rollDiceButton.disabled = false;
+                }, 500);
+            }
+        }
+
+        spinButton.disabled = true;
+        cancelAnimationFrame(animationFrame);
+        requestAnimationFrame(animate);
+    }
+
+    drawWheel();
+    modal.style.display = 'flex';
+    spinButton.onclick = spinWheel;
 }
     
     // 更新分數顯示

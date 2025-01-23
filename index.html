@@ -931,43 +931,39 @@ function handleGameEnd() {
     const wishOverlay = document.getElementById('wishOverlay');
     const wishForm = document.getElementById('wishForm');
     
-    // 新增重新開始按鈕到祝福視窗中
-    if (!document.getElementById('restartButton')) {
-        const buttonContainer = document.createElement('div');
-        buttonContainer.style.marginTop = '10px';
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'space-between';
-        
-        const restartButton = document.createElement('button');
-        restartButton.id = 'restartButton';
-        restartButton.textContent = '重新開始遊戲';
-        restartButton.className = 'wish-submit';
-        restartButton.style.backgroundColor = '#4CAF50';
-        restartButton.onclick = () => {
-            sessionStorage.removeItem('gameState');
-            window.location.reload();
-        };
-        
-        const submitScoreButton = document.createElement('button');
-        submitScoreButton.textContent = '提交成績';
-        submitScoreButton.className = 'wish-submit';
-        submitScoreButton.onclick = () => {
-            const wishText = wishForm.querySelector('textarea').value.trim();
-            sendGameResult(playerName, score, wishText);
-        };
-        
-        buttonContainer.appendChild(restartButton);
-        buttonContainer.appendChild(submitScoreButton);
-        wishForm.appendChild(buttonContainer);
-    }
+    // 清除原有的表單內容
+    wishForm.innerHTML = '';
+    
+    // 修改標題文字
+    const modalTitle = wishModal.querySelector('h2');
+    modalTitle.textContent = '遊戲結束！';
+    
+    // 添加分數展示
+    const scoreDisplay = document.createElement('div');
+    scoreDisplay.style.fontSize = '24px';
+    scoreDisplay.style.marginBottom = '20px';
+    scoreDisplay.style.textAlign = 'center';
+    scoreDisplay.textContent = `最終得分：${score}分`;
+    wishForm.appendChild(scoreDisplay);
+    
+    // 只添加重新開始按鈕
+    const restartButton = document.createElement('button');
+    restartButton.id = 'restartButton';
+    restartButton.textContent = '重新開始遊戲';
+    restartButton.className = 'wish-submit';
+    restartButton.style.backgroundColor = '#4CAF50';
+    restartButton.onclick = () => {
+        sessionStorage.removeItem('gameState');
+        window.location.reload();
+    };
+    
+    wishForm.appendChild(restartButton);
+    
+    // 自動記錄成績
+    sendGameResult(playerName, score, '');
     
     wishModal.style.display = 'block';
     wishOverlay.style.display = 'block';
-    
-    // 移除原有的自動提交表單事件
-    wishForm.onsubmit = function(e) {
-        e.preventDefault();
-    };
 }
 
         function askQuestion(position) {

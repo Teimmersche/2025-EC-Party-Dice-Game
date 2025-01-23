@@ -480,8 +480,71 @@
 const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyem6VpFwrNopc5B_xWO8I6B7SsNvX41KJBzMcZMD_s-f8rxdiFOSO-p4olnvsGaM8/exec'; // 替換為您的網址
 
 // 修改 sendGameResult 函數以確保正確處理 wish 參數
-function sendGameResult(playerName, score, wishText) {
-    // 顯示載入中訊息
+async function sendGameResult(playerName, score, wishText) {
+    // 創建加載提示
+    const loadingMessage = createLoadingMessage();
+    document.body.appendChild(loadingMessage);
+
+    try {
+        // 準備數據
+        const data = {
+            playerName: playerName,
+            score: score,
+            wish: wishText || '',
+            timestamp: new Date().toISOString()
+        };
+
+        // 使用 URL 搜索參數
+        const params = new URLSearchParams(data);
+        const url = `${googleAppsScriptUrl}?${params.toString()}`;
+
+        // 設置請求選項
+        const requestOptions = {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Accept': 'application/json'
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer'
+        };
+
+        // 添加超時處理
+        const timeout = 30000;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        requestOptions.signal = controller.signal;
+
+        // 發送請求
+        const response = await fetch(url, requestOptions);
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            // 顯示成功消息
+            loadingMessage.textContent = '儲存成功！正在前往排行榜...';
+            loadingMessage.style.background = 'rgba(0, 128, 0, 0.8)';
+            
+            // 延遲跳轉
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            window.location.href = 'result.html';
+        } else {
+            throw new Error(result.message || '伺服器回應異常');
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        handleError(error.message, loadingMessage);
+    }
+}
+
+// 創建加載提示元素
+function createLoadingMessage() {
     const loadingMessage = document.createElement('div');
     loadingMessage.style.position = 'fixed';
     loadingMessage.style.top = '50%';
@@ -493,73 +556,23 @@ function sendGameResult(playerName, score, wishText) {
     loadingMessage.style.borderRadius = '10px';
     loadingMessage.style.zIndex = '9999';
     loadingMessage.textContent = '正在儲存資料...';
-    document.body.appendChild(loadingMessage);
+    return loadingMessage;
+}
 
-    // 準備資料
-    const data = {
-        playerName: playerName,
-        score: score,
-        wish: wishText || '',
-        timestamp: new Date().toISOString()
+// 錯誤處理
+function handleError(message, loadingMessage) {
+    loadingMessage.textContent = `${message}\n點擊此處重試`;
+    loadingMessage.style.background = 'rgba(255, 0, 0, 0.8)';
+    loadingMessage.style.cursor = 'pointer';
+    
+    // 添加重試事件監聽器
+    const retryHandler = async () => {
+        loadingMessage.removeEventListener('click', retryHandler);
+        document.body.removeChild(loadingMessage);
+        await sendGameResult(playerName, score, wishText);
     };
-
-    // 使用 XMLHttpRequest 而不是 fetch
-    const xhr = new XMLHttpRequest();
-    const timeout = 30000; // 30 秒超時
-    xhr.timeout = timeout;
-
-    const url = `${googleAppsScriptUrl}?${new URLSearchParams(data).toString()}`;
-    xhr.open('GET', url, true);
-
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.status === 'success') {
-                    // 顯示成功訊息
-                    loadingMessage.textContent = '儲存成功！正在前往排行榜...';
-                    loadingMessage.style.background = 'rgba(0, 128, 0, 0.8)';
-                    
-                    // 延遲跳轉以確保資料完全寫入
-                    setTimeout(() => {
-                        window.location.href = 'result.html';
-                    }, 2000);
-                } else {
-                    throw new Error('伺服器回應異常');
-                }
-            } catch (error) {
-                handleError('資料處理錯誤：' + error.message);
-            }
-        } else {
-            handleError('伺服器錯誤：' + xhr.status);
-        }
-    };
-
-    xhr.onerror = function() {
-        handleError('網路連線錯誤');
-    };
-
-    xhr.ontimeout = function() {
-        handleError('連線逾時，請檢查網路狀態');
-    };
-
-    function handleError(message) {
-        console.error(message);
-        loadingMessage.textContent = message + '\n點擊此處重試';
-        loadingMessage.style.background = 'rgba(255, 0, 0, 0.8)';
-        loadingMessage.style.cursor = 'pointer';
-        loadingMessage.onclick = function() {
-            document.body.removeChild(loadingMessage);
-            sendGameResult(playerName, score, wishText);
-        };
-    }
-
-    // 發送請求
-    try {
-        xhr.send();
-    } catch (error) {
-        handleError('發送請求失敗：' + error.message);
-    }
+    
+    loadingMessage.addEventListener('click', retryHandler);
 }
 
         const board = document.getElementById('board');

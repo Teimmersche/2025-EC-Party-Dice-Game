@@ -257,6 +257,17 @@
     padding: 10px;
     z-index: 1; /* 確保不會蓋住題目彈窗 */
 }
+        #rollDice {
+    width: 80px;
+    margin-bottom: 10px;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    z-index: 101;  /* 確保按鈕在最上層 */
+}
 
 /* 調整分數顯示 */
 .score-display {
@@ -471,12 +482,15 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 120px;  /* 固定寬度 */
+    width: 120px;
     background: white;
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     z-index: 100;
+    display: flex;  /* 確保內容垂直排列 */
+    flex-direction: column;
+    align-items: center;
 }
 
 .dice-container {
@@ -525,18 +539,19 @@
     <!-- 遊戲主畫面 (預設隱藏) -->
     <div class="game-screen" style="display: none;">
     <div class="board-container">
+        <!-- 遊戲板 -->
         <div class="board" id="board"></div>
+        
+        <!-- 骰子控制區 -->
         <div class="center-controls">
             <button class="button" id="rollDice">擲骰</button>
-            <div class="dice-container">
-                <div class="dice" id="dice">
-                    <div class="dice-face" id="diceFace"></div>
-                </div>
+            <div class="dice" id="dice">
+                <div class="dice-face" id="diceFace"></div>
             </div>
         </div>
     </div>
-    
-    <!-- 其他遊戲資訊 -->
+
+    <!-- 遊戲資訊 -->
     <div class="game-info">
         <div class="info-item">當前分數：<span id="score">100</span></div>
         <div class="info-item">擲骰結果：<span id="diceResult">-</span></div>

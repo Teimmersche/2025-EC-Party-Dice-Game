@@ -409,6 +409,18 @@
     .wish-input {
         height: 100px;
     }
+            }
+                .wish-modal button {
+    margin: 5px;
+    min-width: 120px;
+}
+
+.wish-modal button#restartButton {
+    background-color: #4CAF50;
+}
+
+.wish-modal button#restartButton:hover {
+    background-color: #45a049;
 }
     </style>
 
@@ -919,20 +931,43 @@ function handleGameEnd() {
     const wishOverlay = document.getElementById('wishOverlay');
     const wishForm = document.getElementById('wishForm');
     
+    // 新增重新開始按鈕到祝福視窗中
+    if (!document.getElementById('restartButton')) {
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.marginTop = '10px';
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'space-between';
+        
+        const restartButton = document.createElement('button');
+        restartButton.id = 'restartButton';
+        restartButton.textContent = '重新開始遊戲';
+        restartButton.className = 'wish-submit';
+        restartButton.style.backgroundColor = '#4CAF50';
+        restartButton.onclick = () => {
+            sessionStorage.removeItem('gameState');
+            window.location.reload();
+        };
+        
+        const submitScoreButton = document.createElement('button');
+        submitScoreButton.textContent = '提交成績';
+        submitScoreButton.className = 'wish-submit';
+        submitScoreButton.onclick = () => {
+            const wishText = wishForm.querySelector('textarea').value.trim();
+            sendGameResult(playerName, score, wishText);
+        };
+        
+        buttonContainer.appendChild(restartButton);
+        buttonContainer.appendChild(submitScoreButton);
+        wishForm.appendChild(buttonContainer);
+    }
+    
     wishModal.style.display = 'block';
     wishOverlay.style.display = 'block';
     
-    wishForm.addEventListener('submit', function(e) {
+    // 移除原有的自動提交表單事件
+    wishForm.onsubmit = function(e) {
         e.preventDefault();
-        const wishText = wishForm.querySelector('textarea').value.trim();
-        
-        // 使用我們確認可用的 sendGameResult 函數
-        sendGameResult(playerName, score, wishText);
-        
-        // 關閉祝福視窗
-        wishModal.style.display = 'none';
-        wishOverlay.style.display = 'none';
-    });
+    };
 }
 
         function askQuestion(position) {

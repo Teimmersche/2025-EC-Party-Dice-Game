@@ -352,6 +352,64 @@
             .wish-input {
                 height: 120px;
             }
+            @media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .board {
+        width: 95vmin;
+        height: 95vmin;
+        gap: 1px;
+    }
+
+    .node {
+        width: calc(95vmin / 11 - 2px);
+        height: calc(95vmin / 11 - 2px);
+        font-size: 10px;
+        padding: 2px;
+    }
+
+    .controls {
+        margin: 10px 0;
+    }
+
+    .button {
+        padding: 8px 16px;
+        font-size: 14px;
+        margin: 5px;
+        min-height: 44px; /* 確保觸控區域足夠大 */
+    }
+
+    .dice {
+        width: 40px;
+        height: 40px;
+    }
+
+    .question-container {
+        width: 90%;
+        max-width: 400px;
+        padding: 15px;
+    }
+
+    .question-container button {
+        min-height: 44px;
+        margin: 8px 0;
+        font-size: 14px;
+    }
+
+    .wish-modal {
+        width: 90%;
+        max-width: 400px;
+        height: auto;
+        padding: 15px;
+    }
+
+    .wish-input {
+        height: 100px;
+    }
+}
     </style>
 
 </head>
@@ -423,64 +481,66 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyem6VpFwrN
 
 // 修改 sendGameResult 函數以確保正確處理 wish 參數
 function sendGameResult(playerName, score, wishText) {
-    // 加入除錯訊息
-    console.log('準備發送資料：', { playerName, score, wishText });
-
-    // 確保所有資料都是有效的
-    if (!playerName || typeof score === 'undefined') {
-        console.error('無效的資料：', { playerName, score });
-        alert('資料無效，請重試');
-        return;
-    }
-
-    // 建立要傳送的資料物件
-    const data = {
-        playerName: playerName,
-        score: score,
-        wish: wishText || '',
-        timestamp: new Date().toISOString()
-    };
-
-    // 建立查詢字串
-    const params = new URLSearchParams(data);
-    const url = `${googleAppsScriptUrl}?${params.toString()}`;
-    
-    console.log('發送請求到：', url);
-
-    // 發送請求
-    fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'omit'
-    })
-    .then(response => {
-        console.log('收到伺服器回應：', response.status);
-        if (!response.ok) {
-            throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
+    return new Promise((resolve, reject) => {
+        if (!navigator.onLine) {
+            alert('請確認網路連線後再試一次');
+            reject(new Error('無網路連線'));
+            return;
         }
-        return response.text();
-    })
-    .then(text => {
-        console.log('回應內容：', text);
-        try {
-            const result = JSON.parse(text);
-            if (result.status === 'success') {
-                console.log('資料儲存成功');
-                // 等待一下再轉址，確保資料有時間寫入
-                setTimeout(() => {
-                    window.location.href = 'result.html';
-                }, 1000);
-            } else {
-                throw new Error(result.message || '儲存失敗');
-            }
-        } catch (e) {
-            console.error('解析回應時發生錯誤：', e);
-            throw e;
+
+        const data = new URLSearchParams({
+            playerName: playerName,
+            score: score,
+            wish: wishText || '',
+            timestamp: new Date().toISOString(),
+            device: navigator.userAgent
+        });
+
+        const MAX_RETRIES = 3;
+        let retryCount = 0;
+
+        function trySubmit() {
+            fetch(`${googleAppsScriptUrl}?${data.toString()}`, {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'omit',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                timeout: 10000 // 10 秒超時
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP 錯誤：${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                const result = JSON.parse(text);
+                if (result.status === 'success') {
+                    resolve(result);
+                    // 加入延遲以確保資料完全寫入
+                    setTimeout(() => {
+                        window.location.href = 'result.html';
+                    }, 1500);
+                } else {
+                    throw new Error(result.message || '儲存失敗');
+                }
+            })
+            .catch(error => {
+                console.error('提交錯誤：', error);
+                if (retryCount < MAX_RETRIES) {
+                    retryCount++;
+                    console.log(`重試第 ${retryCount} 次...`);
+                    setTimeout(trySubmit, 1000 * retryCount);
+                } else {
+                    alert('儲存失敗，請重試');
+                    reject(error);
+                }
+            });
         }
-    })
-    .catch(error => {
-        console.error('發送資料時發生錯誤：', error);
-        alert('儲存資料時發生錯誤，請重試');
+
+        trySubmit();
     });
 }
 

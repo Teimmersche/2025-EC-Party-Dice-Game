@@ -592,6 +592,49 @@ function handleError(message, loadingMessage) {
 const answerButton = document.getElementById('answerButton');
 const passButton = document.getElementById('passButton');
 
+const GameState = {
+    saveState: function(state) {
+        const gameState = {
+            playerName: state.playerName,
+            score: state.score,
+            playerPosition: state.playerPosition,
+            totalNodesTravelled: state.totalNodesTravelled,
+            completedLaps: state.completedLaps,
+            isGameOver: state.isGameOver,
+            gameStartTime: state.gameStartTime || Date.now(),
+            lastUpdateTime: Date.now()
+        };
+        
+        localStorage.setItem('currentGameState', JSON.stringify(gameState));
+        localStorage.setItem('gameInProgress', 'true');
+    },
+
+    loadState: function() {
+        const savedState = localStorage.getItem('currentGameState');
+        const gameInProgress = localStorage.getItem('gameInProgress');
+        
+        if (savedState && gameInProgress === 'true') {
+            return JSON.parse(savedState);
+        }
+        return null;
+    },
+
+    clearState: function() {
+        localStorage.removeItem('currentGameState');
+        localStorage.removeItem('gameInProgress');
+    },
+
+    hasActiveGame: function() {
+        return localStorage.getItem('gameInProgress') === 'true';
+    },
+
+    isStateValid: function(state) {
+        if (!state || !state.lastUpdateTime) return false;
+        const MAX_GAME_DURATION = 30 * 60 * 1000; // 30分鐘
+        return (Date.now() - state.lastUpdateTime) < MAX_GAME_DURATION;
+    }
+};
+        
 // 玩家選擇答題
 answerButton.addEventListener('click', () => {
     choiceContainer.style.display = "none"; // 隱藏選擇視窗
@@ -883,14 +926,15 @@ function handleSpecialCorner(cornerName) {
         const newLaps = Math.floor(totalNodesTravelled / totalNodes);
 
         if (newLaps >= 1) {
-    alert("遊戲結束！你完成了 3 個完整迴圈！");
-    console.log("遊戲結束時的 playerName:", playerName);  // 加入除錯訊息
-    isGameOver = true;
-    handleGameEnd(); // 在這裡呼叫 handleGameEnd
-    rollDiceButton.disabled = true;
-    rollDiceButton.textContent = "遊戲結束";
-    return;
-}
+        alert("遊戲結束！你完成了 3 個完整迴圈！");
+        console.log("遊戲結束時的 playerName:", playerName);
+        isGameOver = true;
+        GameState.clearState(); // 清除遊戲狀態
+        handleGameEnd();
+        rollDiceButton.disabled = true;
+        rollDiceButton.textContent = "遊戲結束";
+        return;
+    }
 
         playerPosition = (playerPosition + diceResult) % totalNodes;
         updatePlayerPosition();
@@ -915,6 +959,7 @@ function handleSpecialCorner(cornerName) {
 
 // 修改 handleGameEnd 函數
 function handleGameEnd() {
+    GameState.clearState(); // 清除遊戲狀態
     const wishModal = document.getElementById('wishModal');
     const wishOverlay = document.getElementById('wishOverlay');
     const wishForm = document.getElementById('wishForm');
@@ -925,14 +970,64 @@ function handleGameEnd() {
     wishForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const wishText = wishForm.querySelector('textarea').value.trim();
-        
-        // 使用我們確認可用的 sendGameResult 函數
         sendGameResult(playerName, score, wishText);
         
-        // 關閉祝福視窗
         wishModal.style.display = 'none';
         wishOverlay.style.display = 'none';
     });
+}
+        // 3. 新增遊戲初始化函數
+function initializeGame() {
+    if (GameState.hasActiveGame()) {
+        const savedState = GameState.loadState();
+        if (savedState && GameState.isStateValid(savedState)) {
+            const confirmResume = confirm('檢測到未完成的遊戲，是否要繼續？');
+            if (confirmResume) {
+                restoreGameState(savedState);
+                return true;
+            }
+        }
+        GameState.clearState();
+    }
+    return false;
+}
+
+// 4. 新增遊戲狀態恢復函數
+function restoreGameState(savedState) {
+    playerName = savedState.playerName;
+    score = savedState.score;
+    playerPosition = savedState.playerPosition;
+    totalNodesTravelled = savedState.totalNodesTravelled;
+    completedLaps = savedState.completedLaps;
+    isGameOver = savedState.isGameOver;
+    
+    nameInput.value = playerName;
+    nameInput.disabled = true;
+    document.getElementById('startGame').disabled = true;
+    board.style.display = "grid";
+    gameControls.style.display = "block";
+    document.querySelector('.controls').style.display = "none";
+    scoreDisplay.textContent = score;
+    
+    updatePlayerPosition();
+}
+
+// 5. 新增自動保存設置函數
+function setupAutosave() {
+    const AUTOSAVE_INTERVAL = 5000; // 每5秒自動保存
+    
+    setInterval(() => {
+        if (!isGameOver) {
+            GameState.saveState({
+                playerName,
+                score,
+                playerPosition,
+                totalNodesTravelled,
+                completedLaps,
+                isGameOver
+            });
+        }
+    }, AUTOSAVE_INTERVAL);
 }
 
         function askQuestion(position) {
@@ -997,33 +1092,42 @@ function handleGameEnd() {
 
 // 將這段程式碼加在 JavaScript 的最後面
 document.addEventListener('DOMContentLoaded', () => {
-    const startGameButton = document.getElementById('startGame');
-    const newButton = startGameButton.cloneNode(true);
-    startGameButton.parentNode.replaceChild(newButton, startGameButton);
-    
-    // 添加新的事件監聽器
-    newButton.addEventListener('click', () => {
-        console.log("輸入框值:", nameInput.value);
-        playerName = nameInput.value.trim();
-        console.log("存儲後的 playerName:", playerName);
+    if (!initializeGame()) {
+        setupAutosave();
         
-        if (!playerName || playerName.length > 20 || !/^[\w\u4e00-\u9fa5]+$/.test(playerName)) {
-            alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
-            return;
-        }
+        const startGameButton = document.getElementById('startGame');
+        const newButton = startGameButton.cloneNode(true);
+        startGameButton.parentNode.replaceChild(newButton, startGameButton);
         
-        nameInput.disabled = true;
-        newButton.disabled = true;
-        
-        // 顯示遊戲區域
-        board.style.display = "grid";
-        gameControls.style.display = "block";
-        
-        // 隱藏玩家名稱輸入區塊
-        document.querySelector('.controls').style.display = "none";
-        
-        updatePlayerPosition();
-    });
+        newButton.addEventListener('click', () => {
+            console.log("輸入框值:", nameInput.value);
+            playerName = nameInput.value.trim();
+            console.log("存儲後的 playerName:", playerName);
+            
+            if (!playerName || playerName.length > 20 || !/^[\w\u4e00-\u9fa5]+$/.test(playerName)) {
+                alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
+                return;
+            }
+            
+            nameInput.disabled = true;
+            newButton.disabled = true;
+            
+            board.style.display = "grid";
+            gameControls.style.display = "block";
+            
+            document.querySelector('.controls').style.display = "none";
+            
+            updatePlayerPosition();
+            setupAutosave(); // 開始自動保存
+        });
+    }
+});
+        window.addEventListener('beforeunload', function(e) {
+    if (!isGameOver && GameState.hasActiveGame()) {
+        e.preventDefault();
+        e.returnValue = '遊戲尚未結束，確定要離開嗎？';
+        return e.returnValue;
+    }
 });
         
         loadHistory();

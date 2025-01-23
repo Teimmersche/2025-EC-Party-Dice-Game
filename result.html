@@ -93,26 +93,32 @@
         async function loadRecords() {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getRecords`);
-                const data = await response.json();
+                const text = await response.text();
+                console.log('Response:', text);
                 
-                if (data.status === 'success') {
+                const data = JSON.parse(text);
+                
+                if (data.status === 'success' && Array.isArray(data.records)) {
                     const leaderboard = document.getElementById('leaderboard');
                     leaderboard.innerHTML = '';
                     
-                    // 排序記錄（依分數高到低）
-                    const sortedRecords = data.records.sort((a, b) => b[1] - a[1]);
-                    
-                    sortedRecords.forEach((record, index) => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${record[0]}</td>
-                            <td>${record[1]}</td>
-                            <td class="wish" title="${record[2]}">${record[2]}</td>
-                            <td>${new Date(record[3]).toLocaleString()}</td>
-                        `;
-                        leaderboard.appendChild(row);
-                    });
+                    if (data.records.length > 0) {
+                        const sortedRecords = data.records
+                            .filter(record => record && Array.isArray(record) && record.length >= 4)
+                            .sort((a, b) => (b[1] || 0) - (a[1] || 0));
+                        
+                        sortedRecords.forEach((record, index) => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${index + 1}</td>
+                                <td>${record[0] || 'Unknown'}</td>
+                                <td>${record[1] || 0}</td>
+                                <td class="wish" title="${record[2] || ''}">${record[2] || ''}</td>
+                                <td>${record[3] ? new Date(record[3]).toLocaleString() : ''}</td>
+                            `;
+                            leaderboard.appendChild(row);
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('載入記錄失敗:', error);
@@ -120,7 +126,6 @@
             }
         }
 
-        // 頁面載入時自動載入記錄
         window.onload = loadRecords;
     </script>
 </body>

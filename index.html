@@ -443,6 +443,49 @@
             .wish-input {
                 height: 120px;
             }
+            <style>
+.board-container {
+    position: relative;
+    width: 90vmin;
+    height: 90vmin;
+    margin: 20px auto;
+}
+
+.center-controls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 10;
+}
+
+.dice-container {
+    width: 60px;
+    height: 60px;
+}
+
+.dice {
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+}
+
+.dice.animate {
+    animation: roll 1s ease-out;
+}
+
+@keyframes roll {
+    0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+    100% { transform: rotateX(720deg) rotateY(720deg) rotateZ(720deg); }
+}
     </style>
 
 </head>
@@ -468,23 +511,25 @@
 
     <!-- 遊戲主畫面 (預設隱藏) -->
     <div class="game-screen" style="display: none;">
-        <!-- 遊戲版和骰子容器 -->
-        <div class="board" id="board">
+    <div class="board-container">
+        <div class="board" id="board"></div>
+        <div class="center-controls">
+            <button class="button" id="rollDice">擲骰</button>
             <div class="dice-container">
-                <button class="button" id="rollDice">擲骰</button>
                 <div class="dice" id="dice">
                     <div class="dice-face" id="diceFace"></div>
                 </div>
             </div>
         </div>
-
-        <!-- 遊戲資訊 -->
-        <div class="game-info">
-            <div class="info-item">當前分數：<span id="score">100</span></div>
-            <div class="info-item">擲骰結果：<span id="diceResult">-</span></div>
-            <div class="info-item">擲骰次數：<span id="rollCount">0</span></div>
-        </div>
     </div>
+    
+    <!-- 其他遊戲資訊 -->
+    <div class="game-info">
+        <div class="info-item">當前分數：<span id="score">100</span></div>
+        <div class="info-item">擲骰結果：<span id="diceResult">-</span></div>
+        <div class="info-item">擲骰次數：<span id="rollCount">0</span></div>
+    </div>
+</div>
 
         </table>
     </div>

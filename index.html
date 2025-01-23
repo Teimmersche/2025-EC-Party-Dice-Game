@@ -506,15 +506,13 @@ async function sendGameResult(playerName, score, wishText) {
 
         const params = new URLSearchParams(data);
         const url = `${googleAppsScriptUrl}?${params.toString()}`;
-
+        
         const requestOptions = {
             method: 'GET',
             mode: 'cors',
             headers: {
                 'Accept': 'application/json'
-            },
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer'
+            }
         };
 
         const response = await fetch(url, requestOptions);
@@ -529,10 +527,9 @@ async function sendGameResult(playerName, score, wishText) {
             loadingMessage.textContent = '成績儲存成功！正在前往排行榜...';
             loadingMessage.style.background = 'rgba(0, 128, 0, 0.8)';
             
-            // 使用 window.location.replace 確保正確導向到排行榜頁面
             setTimeout(() => {
-                window.location.replace('result.html');
-            }, 1000);
+                window.location.href = 'result.html';
+            }, 1500);
         } else {
             throw new Error(result.message || '伺服器回應異常');
         }
@@ -542,7 +539,6 @@ async function sendGameResult(playerName, score, wishText) {
         loadingMessage.textContent = `儲存失敗：${error.message}\n點擊重試`;
         loadingMessage.style.background = 'rgba(255, 0, 0, 0.8)';
         loadingMessage.style.cursor = 'pointer';
-        
         loadingMessage.onclick = () => {
             document.body.removeChild(loadingMessage);
             sendGameResult(playerName, score, wishText);
@@ -1001,21 +997,37 @@ function handleGameEnd() {
     restartButton.style.backgroundColor = '#4CAF50';
     restartButton.style.marginRight = '10px';
     restartButton.onclick = () => {
-        sessionStorage.removeItem('gameState');
-        window.location.reload();
+        location.reload(); // 直接重新載入頁面
     };
     
-    // 創建提交成績按鈕
-    const submitButton = document.createElement('button');
-    submitButton.textContent = '提交成績';
-    submitButton.className = 'wish-submit';
-    submitButton.onclick = () => {
-        sendGameResult(playerName, score, '');
+    // 創建留下祝福按鈕
+    const wishButton = document.createElement('button');
+    wishButton.textContent = '留下祝福結算成績';
+    wishButton.className = 'wish-submit';
+    wishButton.onclick = () => {
+        // 先隱藏按鈕容器
+        buttonContainer.style.display = 'none';
+        
+        // 創建祝福輸入區
+        const wishInput = document.createElement('textarea');
+        wishInput.className = 'wish-input';
+        wishInput.placeholder = '在這裡寫下你的新年期許或祝福...';
+        wishInput.style.marginBottom = '20px';
+        wishForm.appendChild(wishInput);
+        
+        // 創建提交按鈕
+        const submitButton = document.createElement('button');
+        submitButton.textContent = '提交成績與祝福';
+        submitButton.className = 'wish-submit';
+        submitButton.onclick = () => {
+            sendGameResult(playerName, score, wishInput.value);
+        };
+        wishForm.appendChild(submitButton);
     };
     
     // 將按鈕添加到容器中
     buttonContainer.appendChild(restartButton);
-    buttonContainer.appendChild(submitButton);
+    buttonContainer.appendChild(wishButton);
     
     // 將按鈕容器添加到表單中
     wishForm.appendChild(buttonContainer);

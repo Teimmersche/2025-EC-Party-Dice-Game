@@ -90,6 +90,21 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyem6VpFwrNopc5B_xWO8I6B7SsNvX41KJBzMcZMD_s-f8rxdiFOSO-p4olnvsGaM8/exec';
 
+        // 在這裡加入 escapeHtml 函式
+        function escapeHtml(text) {
+    if (!text) return '';
+    
+    const htmlEscapes = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;'
+    };
+    
+    return text.toString().replace(/[&<>"']/g, char => htmlEscapes[char]);
+}
+
 async function loadRecords() {
     const leaderboard = document.getElementById('leaderboard');
     leaderboard.innerHTML = '<tr><td colspan="5">載入中...</td></tr>';

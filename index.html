@@ -640,12 +640,6 @@
         <h2 id="questionText">問題</h2>
         <div id="options"></div>
     </div>
-  <div class="question-container" id="questionContainer">
-  <div class="question-dialog">
-    <h2 id="questionText" class="text-xl font-bold mb-4">問題</h2>
-    <div id="options" class="space-y-2"></div>
-  </div>
-</div>
 <div class="modal-overlay" id="wishOverlay"></div>
     <div class="wish-modal" id="wishModal">
         <h2>🌟 新年祝福 2025 🌟</h2>
@@ -713,6 +707,22 @@ function sendGameResult(playerName, score, wish) {
 const answerButton = document.getElementById('answerButton');
 const passButton = document.getElementById('passButton');
 
+document.getElementById('startGame').addEventListener('click', () => {
+    playerName = nameInput.value.trim();
+    
+    if (!playerName || playerName.length > 20 || !/^[\w\u4e00-\u9fa5]+$/.test(playerName)) {
+        alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
+        return;
+    }
+    
+    document.querySelector('.welcome-screen').style.display = 'none';
+    document.querySelector('.game-screen').style.display = 'block';
+    
+    createNodes();
+    updatePlayerPosition();
+    updateDiceFace(1);
+});
+        
 // 玩家選擇答題
 answerButton.addEventListener('click', () => {
     choiceContainer.style.display = "none"; // 隱藏選擇視窗
@@ -1121,33 +1131,6 @@ function handleGameEnd() {
     // 啟用擲骰按鈕
     if (!isGameOver) rollDiceButton.disabled = false;
 }
-
-// 將這段程式碼加在 JavaScript 的最後面
-document.addEventListener('DOMContentLoaded', () => {
-    const startGameButton = document.getElementById('startGame');
-    const newButton = startGameButton.cloneNode(true);
-    startGameButton.parentNode.replaceChild(newButton, startGameButton);
-    
-    newButton.addEventListener('click', () => {
-        playerName = nameInput.value.trim();
-        
-        if (!playerName || playerName.length > 20 || !/^[\w\u4e00-\u9fa5]+$/.test(playerName)) {
-            alert("請輸入有效的名字（20 字以內，僅包含字母、數字或中文）！");
-            return;
-        }
-        
-        // 隱藏歡迎畫面
-        document.querySelector('.welcome-screen').style.display = 'none';
-        
-        // 顯示遊戲畫面
-        document.querySelector('.game-screen').style.display = 'block';
-        
-        // 初始化遊戲
-        createNodes();
-        updatePlayerPosition();
-        updateDiceFace(1);
-    });
-});
         
         loadHistory();
         createNodes();

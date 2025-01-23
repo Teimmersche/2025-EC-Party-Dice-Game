@@ -143,94 +143,151 @@
             color: white;
         }
 
+        .game-screen {
+            display: none;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+            margin: 1rem 0;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .node {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            text-align: center;
+            padding: 0.5rem;
+            min-height: 60px;
+            position: relative;
+        }
+
+        .game-info {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-item {
+            margin: 0.5rem 0;
+            text-align: center;
+        }
+
+        .dice-container {
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .dice-face {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            padding: 8px;
+            margin: 1rem auto;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #4a5568;
+            border-radius: 50%;
+            margin: auto;
+        }
+
+        .player {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: #e53e3e;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
         @media (max-width: 640px) {
             .container {
                 padding: 1rem;
                 margin: 1rem;
             }
-        .game-screen {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 1rem;
-}
 
-.board {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 0.5rem;
-    margin: 1rem 0;
-    background: white;
-    padding: 1rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.dice-face {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    width: 60px;
-    height: 60px;
-    padding: 8px;
-    background: white;
-    border-radius: 8px;
-    margin: 1rem auto;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    background: #4a5568;
-    border-radius: 50%;
-    margin: auto;
-}
+            .node {
+                min-height: 40px;
+                padding: 0.25rem;
+                font-size: 0.75rem;
+            }
         }
     </style>
-
 </head>
 <body>
     <div class="container">
-    <div class="game-card">
-        <h1 class="title">2025尾牙遊戲</h1>
-        
-        <div class="input-group">
-            <label class="input-label">玩家名稱</label>
-            <input type="text" id="name" class="input-field" placeholder="請輸入您的名字">
-            <button class="button" id="startGame">開始遊戲</button>
+        <div class="game-card">
+            <h1 class="title">2025尾牙遊戲</h1>
+            
+            <div class="input-group">
+                <label class="input-label">玩家名稱</label>
+                <input type="text" id="name" class="input-field" placeholder="請輸入您的名字">
+                <button class="button" id="startGame">開始遊戲</button>
+            </div>
+
+            <div class="rules-section">
+                <h2 class="rules-title">遊戲規則</h2>
+                <ul class="rules-list">
+                    <li>玩家從起點開始，擲骰子決定前進步數</li>
+                    <li>落在問答格需回答該類別題目：答對+10分，答錯-10分</li>
+                    <li>可選擇跳過回答，但會扣10分</li>
+                    <li>特殊角落可獲得50分</li>
+                    <li>繞完一圈即可結束遊戲</li>
+                </ul>
+            </div>
         </div>
 
-        <div class="rules-section">
-            <h2 class="rules-title">遊戲規則</h2>
-            <ul class="rules-list">
-                <li>玩家從起點開始，擲骰子決定前進步數</li>
-                <li>落在問答格需回答該類別題目：答對+10分，答錯-10分</li>
-                <li>可選擇跳過回答，但會扣10分</li>
-                <li>特殊角落可獲得50分</li>
-                <li>繞完一圈即可結束遊戲</li>
-            </ul>
+        <div class="game-screen">
+            <div class="board" id="board"></div>
+            <div class="game-info">
+                <div class="info-item">
+                    分數：<span id="score">100</span>
+                </div>
+                <div class="info-item">
+                    擲骰結果：<span id="diceResult">-</span>
+                </div>
+                <div class="dice-container">
+                    <div class="dice-face" id="diceFace"></div>
+                    <button class="button" id="rollDice">擲骰</button>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- 新增遊戲主畫面 -->
-    <div class="game-screen" style="display: none;">
-        <div class="board" id="board"></div>
-        <div class="game-info">
-            <div class="info-item">
-                <span>當前分數：</span>
-                <span id="score">100</span>
+        <div id="questionContainer" class="question-modal" style="display: none;">
+            <h2 id="questionText" class="question-title">問題</h2>
+            <div id="options" class="choice-buttons"></div>
+        </div>
+
+        <div id="choiceContainer" class="question-modal" style="display: none;">
+            <h2 class="question-title">是否答題？</h2>
+            <div class="choice-buttons">
+                <button id="answerButton" class="choice-button">答題</button>
+                <button id="passButton" class="choice-button">跳過 (-10分)</button>
             </div>
-            <div class="info-item">
-                <span>擲骰結果：</span>
-                <span id="diceResult">-</span>
-            </div>
-            <button id="rollDice" class="button">擲骰</button>
-            <div id="diceFace" class="dice-face"></div>
         </div>
     </div>
-</div>
-</body>
-</html>
     <script>
         // Google Apps Script 網頁應用程式網址
 const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbywP4H7lBXRaSjXG-IxbWx_5qf7Z24XgGqAkd-d8U6Qrwkli0HShRA6ypIrt19E1akcSA/exec'; // 替換為您的網址

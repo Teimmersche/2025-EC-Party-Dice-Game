@@ -31,6 +31,71 @@
     justify-content: center;
     align-items: center;
 }
+
+        /* 新增遊戲主容器樣式 */
+.game-container {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  .game-container {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+/* 遊戲資訊面板樣式 */
+.game-info-panel {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .game-info-panel {
+    width: 16rem;
+  }
+}
+
+/* 問題對話框樣式 */
+.question-container {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.question-dialog {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  max-width: 32rem;
+  width: 90%;
+  margin: 1rem;
+}
+
+.question-option {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.question-option:hover {
+  background-color: #eff6ff;
+}
+        
         .node {
             width: 60px; /* 增加寬度 */
             height: 60px; /* 增加高度 */
@@ -530,20 +595,44 @@
 
     <!-- 遊戲主畫面 (預設隱藏) -->
     <div class="game-screen" style="display: none;">
-    <div class="board-container">
-        <div class="board" id="board"></div>
-        <div class="center-controls" id="gameControls">
-            <button class="button" id="rollDice">擲骰</button>
-            <div class="dice" id="dice">
-                <div class="dice-face" id="diceFace"></div>
-            </div>
+  <div class="game-container">
+    <!-- 左側資訊面板 -->
+    <div class="game-info-panel">
+      <div class="text-center">
+        <h3 class="font-bold mb-2">遊戲資訊</h3>
+        <!-- 遊戲資訊卡片 -->
+        <div class="space-y-2">
+          <div class="bg-blue-50 p-2 rounded">
+            <div>當前分數</div>
+            <div id="score" class="text-xl font-bold">100</div>
+          </div>
+          <div class="bg-green-50 p-2 rounded">
+            <div>擲骰結果</div>
+            <div id="diceResult" class="text-xl font-bold">-</div>
+          </div>
+          <div class="bg-purple-50 p-2 rounded">
+            <div>擲骰次數</div>
+            <div id="rollCount" class="text-xl font-bold">0</div>
+          </div>
         </div>
+        
+        <!-- 骰子區域 -->
+        <div class="mt-4">
+          <div class="dice-container">
+            <div class="dice" id="dice">
+              <div class="dice-face" id="diceFace"></div>
+            </div>
+          </div>
+          <button class="button mt-4 w-full" id="rollDice">擲骰</button>
+        </div>
+      </div>
     </div>
-    <div class="game-info">
-        <div class="info-item">當前分數：<span id="score">100</span></div>
-        <div class="info-item">擲骰結果：<span id="diceResult">-</span></div>
-        <div class="info-item">擲骰次數：<span id="rollCount">0</span></div>
+
+    <!-- 遊戲板區域 -->
+    <div class="flex-1">
+      <div class="board" id="board"></div>
     </div>
+  </div>
 </div>
         </table>
     </div>
@@ -551,10 +640,11 @@
         <h2 id="questionText">問題</h2>
         <div id="options"></div>
     </div>
-  <div class="question-container" id="choiceContainer">
-    <h2>是否答題？</h2>
-    <button id="answerButton" class="button">答題</button>
-    <button id="passButton" class="button">跳過 (-10分)</button>
+  <div class="question-container" id="questionContainer">
+  <div class="question-dialog">
+    <h2 id="questionText" class="text-xl font-bold mb-4">問題</h2>
+    <div id="options" class="space-y-2"></div>
+  </div>
 </div>
 <div class="modal-overlay" id="wishOverlay"></div>
     <div class="wish-modal" id="wishModal">
@@ -833,6 +923,7 @@ adjustNodeStyles();
     const currentNode = [...nodes].find(node => node.dataset.index == playerPosition);
     if (currentNode) {
         const playerElement = document.createElement('div');
+        playerElement.className = 'player bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold';
         playerElement.classList.add('player');
         playerElement.textContent = "P";
         currentNode.appendChild(playerElement);
@@ -1000,6 +1091,7 @@ function handleGameEnd() {
 
     question.options.forEach(option => {
         const button = document.createElement('button');
+        button.className = 'question-option';
         button.textContent = option;
         button.addEventListener('click', () => {
             handleAnswer(option === question.answer);
@@ -1008,6 +1100,7 @@ function handleGameEnd() {
     });
 
     questionContainer.style.display = "block";
+    questionContainer.style.display = "flex";
     rollDiceButton.disabled = true;
 }
       function handleAnswer(isCorrect) {

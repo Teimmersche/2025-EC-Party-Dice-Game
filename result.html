@@ -90,7 +90,7 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvEcNEn-txmfBJDGr85FUKD-BvDG2cFprmn6QM3vV_Af3x3llYhEGQan7MIEhs5GSfJw/exec';
 
-        async function loadRecords() {
+async function loadRecords() {
     const leaderboard = document.getElementById('leaderboard');
     leaderboard.innerHTML = '<tr><td colspan="5">載入中...</td></tr>';
     
@@ -98,10 +98,7 @@
         const response = await fetch(`${SCRIPT_URL}?action=getRecords`, {
             method: 'GET',
             mode: 'cors',
-            headers: {
-                'Accept': 'application/json',
-                'Cache-Control': 'no-cache'
-            }
+            credentials: 'omit'
         });
         
         if (!response.ok) {
@@ -110,65 +107,39 @@
         
         const data = await response.json();
         
-        // 增強數據驗證
-        if (!data || typeof data !== 'object') {
-            throw new Error('Invalid response format');
-        }
-
-        if (data.status !== 'success' || !Array.isArray(data.records)) {
-            throw new Error('Invalid data structure');
-        }
-        
-        leaderboard.innerHTML = '';
-        
-        // 改進數據過濾和排序
-        const sortedRecords = data.records
-            .filter(record => {
-                return record && 
-                       Array.isArray(record) && 
-                       record.length >= 4 &&
-                       record[0] && // 確保玩家名稱存在
-                       !isNaN(Number(record[1])) && // 確保分數是有效數字
-                       record[3]; // 確保時間戳存在
-            })
-            .sort((a, b) => Number(b[1]) - Number(a[1]));
-        
-        if (sortedRecords.length === 0) {
-            leaderboard.innerHTML = '<tr><td colspan="5">目前沒有遊戲記錄</td></tr>';
-            return;
-        }
-
-        sortedRecords.forEach((record, index) => {
-            const row = document.createElement('tr');
-            let timestamp;
-            try {
-                timestamp = new Date(record[3]);
-                if (isNaN(timestamp.getTime())) {
-                    throw new Error('Invalid date');
-                }
-            } catch (e) {
-                timestamp = new Date(); // 如果日期無效，使用當前時間
+        if (data.status === 'success' && Array.isArray(data.records)) {
+            leaderboard.innerHTML = '';
+            
+            const sortedRecords = data.records
+                .filter(record => record[0] && !isNaN(Number(record[1]))) // 確保有效的玩家名稱和分數
+                .sort((a, b) => Number(b[1]) - Number(a[1])); // 依分數排序
+            
+            if (sortedRecords.length === 0) {
+                leaderboard.innerHTML = '<tr><td colspan="5">目前沒有遊戲記錄</td></tr>';
+                return;
             }
 
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${escapeHtml(record[0])}</td>
-                <td>${Number(record[1]).toLocaleString()}</td>
-                <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
-                <td>${timestamp.toLocaleString()}</td>
-            `;
-            leaderboard.appendChild(row);
-        });
-        
+            sortedRecords.forEach((record, index) => {
+                const row = document.createElement('tr');
+                const timestamp = new Date(record[3]);
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${escapeHtml(record[0])}</td>
+                    <td>${Number(record[1]).toLocaleString()}</td>
+                    <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
+                    <td>${timestamp.toLocaleString()}</td>
+                `;
+                leaderboard.appendChild(row);
+            });
+        } else {
+            throw new Error('無效的資料格式');
+        }
     } catch (error) {
         console.error('載入記錄失敗:', error);
-        leaderboard.innerHTML = `<tr><td colspan="5">載入失敗：${escapeHtml(error.message)}</td></tr>`;
-        
-        // 5秒後自動重試
-        setTimeout(loadRecords, 5000);
+        leaderboard.innerHTML = '<tr><td colspan="5">載入失敗，請稍後再試</td></tr>';
     }
 }
-        // 改進的 HTML 轉義函數
+
 function escapeHtml(unsafe) {
     if (unsafe == null) return '';
     return String(unsafe)

@@ -456,6 +456,22 @@
     border-radius: 10px;
     text-align: center;
 }
+            #spinWheelButton {
+    font-size: 18px;
+    padding: 12px 24px;
+}
+            .button-clicked {
+    transform: scale(0.95);
+    animation: shake 0.3s;
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
     </style>
 
 </head>
@@ -995,7 +1011,8 @@ function handleSpecialCorner(cornerName) {
             ctx.moveTo(centerX, centerY);
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
             ctx.closePath();
-            ctx.fillStyle = reward.color;
+            ctx.fillStyle = 'radial-gradient(circle, #333, #111)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fill();
 
             ctx.save();
@@ -1010,6 +1027,11 @@ function handleSpecialCorner(cornerName) {
     }
 
     function spinWheel() {
+        spinButton.addEventListener('click', () => {
+        spinButton.classList.add('button-clicked');
+        setTimeout(() => {
+            spinButton.classList.remove('button-clicked');
+        }, 300);
         spinButton.disabled = true;
         const rotation = Math.random() * 360;
         const spinDuration = 3000;
@@ -1038,6 +1060,16 @@ function handleSpecialCorner(cornerName) {
     drawWheel();
     modal.style.display = 'flex';
     spinButton.onclick = spinWheel;
+
+    // 繪製指針
+ctx.beginPath();
+ctx.moveTo(centerX, centerY);
+ctx.lineTo(centerX + radius * 0.8, centerY);
+ctx.lineTo(centerX + radius * 0.6, centerY + 20);
+ctx.lineTo(centerX + radius * 0.6, centerY - 20);
+ctx.closePath();
+ctx.fillStyle = '#333';
+ctx.fill();
 }
 
     // 隨機選擇獎勵

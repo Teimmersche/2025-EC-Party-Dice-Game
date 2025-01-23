@@ -1185,7 +1185,7 @@ function handleSpecialCorner(cornerName) {
     diceFace.classList.add('animate');
     rollDiceButton.disabled = true;
 
-    const diceResult = 5;
+    const diceResult = Math.floor(Math.random() * 6) + 1;
 
     let rollingInterval = setInterval(() => {
         const randomValue = Math.floor(Math.random() * 6) + 1;
@@ -1202,8 +1202,8 @@ function handleSpecialCorner(cornerName) {
 
         const newLaps = Math.floor(totalNodesTravelled / totalNodes);
 
-        if (newLaps >= 1) {
-        alert("遊戲結束！你完成了 3 個完整迴圈！");
+        if (newLaps >= 2) {
+        alert("遊戲結束！你完成了 2 個完整迴圈！");
         console.log("遊戲結束時的 playerName:", playerName);
         isGameOver = true;
         GameState.clearState(); // 清除遊戲狀態

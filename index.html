@@ -179,20 +179,17 @@
         }
         .center-controls {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: calc(4 * 100% / 8); /* 佔據中間4x4的空間 */
-    height: calc(4 * 100% / 8);
+    /* 定位在3,3到4,4的節點位置 */
+    grid-row: 3 / 5;
+    grid-column: 3 / 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     background-color: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     padding: 10px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
+    z-index: 1; /* 確保不會蓋住題目彈窗 */
 }
 
 /* 調整分數顯示 */

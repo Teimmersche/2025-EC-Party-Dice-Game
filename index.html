@@ -965,7 +965,7 @@ function handleSpecialCorner = (cornerName) => {
     diceFace.classList.add('animate');
     rollDiceButton.disabled = true;
 
-    const diceResult = 6;
+    const diceResult = Math.floor(Math.random() * 6) + 1;
 
     let rollingInterval = setInterval(() => {
         const randomValue = Math.floor(Math.random() * 6) + 1;

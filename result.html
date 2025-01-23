@@ -114,95 +114,85 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyem6VpFwrNopc5B_xWO8I6B7SsNvX41KJBzMcZMD_s-f8rxdiFOSO-p4olnvsGaM8/exec';
+        // Google Apps Script 網頁應用程式網址
+        const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyem6VpFwrNopc5B_xWO8I6B7SsNvX41KJBzMcZMD_s-f8rxdiFOSO-p4olnvsGaM8/exec';
 
-        // 在這裡加入 escapeHtml 函式
-        function escapeHtml(text) {
-    if (!text) return '';
-    
-    const htmlEscapes = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;'
-    };
-    
-    return text.toString().replace(/[&<>"']/g, char => htmlEscapes[char]);
-}
+        async function loadRecords() {
+            const leaderboard = document.getElementById('leaderboard');
+            leaderboard.innerHTML = '<tr><td colspan="5">載入中...</td></tr>';
 
-function loadRecords() {
-    const leaderboard = document.getElementById('leaderboard');
-    leaderboard.innerHTML = '<tr><td colspan="5">載入中...</td></tr>';
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', `${googleAppsScriptUrl}?action=getRecords`, true);
-    
-    xhr.onload = function() {
-        try {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                
-                if (response.status === 'success' && Array.isArray(response.records)) {
-                    const sortedRecords = response.records
-                        .filter(record => record && record[0] && typeof record[1] === 'number')
-                        .sort((a, b) => b[1] - a[1]);
-
-                    leaderboard.innerHTML = '';
-                    
-                    if (sortedRecords.length === 0) {
-                        leaderboard.innerHTML = '<tr><td colspan="5">目前沒有遊戲記錄</td></tr>';
-                        return;
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `${googleAppsScriptUrl}?action=getRecords`, true);
+            
+            xhr.onload = function() {
+                try {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        
+                        if (response.status === 'success' && Array.isArray(response.records)) {
+                            displayRecords(response.records);
+                        } else {
+                            throw new Error('無效的資料結構');
+                        }
+                    } else {
+                        throw new Error('伺服器錯誤');
                     }
-
-                    sortedRecords.forEach((record, index) => {
-                        const row = document.createElement('tr');
-                        const timestamp = new Date(record[3] || Date.now());
-                        row.innerHTML = `
-                            <td>${index + 1}</td>
-                            <td>${escapeHtml(record[0])}</td>
-                            <td>${Math.round(record[1]).toLocaleString()}</td>
-                            <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
-                            <td>${timestamp.toLocaleString('zh-TW')}</td>
-                        `;
-                        leaderboard.appendChild(row);
-                    });
-                } else {
-                    throw new Error('無效的資料結構');
+                } catch (error) {
+                    console.error('載入記錄失敗:', error);
+                    leaderboard.innerHTML = `<tr><td colspan="5">載入失敗: ${error.message}</td></tr>`;
                 }
-            } else {
-                throw new Error('伺服器錯誤');
-            }
-        } catch (error) {
-            console.error('載入記錄失敗:', error);
-            leaderboard.innerHTML = `<tr><td colspan="5">載入失敗: ${error.message}</td></tr>`;
+            };
+            
+            xhr.onerror = function() {
+                leaderboard.innerHTML = '<tr><td colspan="5">網路錯誤，請稍後重試</td></tr>';
+            };
+            
+            xhr.timeout = 30000;
+            xhr.ontimeout = function() {
+                leaderboard.innerHTML = '<tr><td colspan="5">載入超時，請重試</td></tr>';
+            };
+            
+            xhr.send();
         }
-    };
-    
-    xhr.onerror = function() {
-        leaderboard.innerHTML = '<tr><td colspan="5">網路錯誤，請稍後重試</td></tr>';
-    };
-    
-    xhr.timeout = 30000;
-    xhr.ontimeout = function() {
-        leaderboard.innerHTML = '<tr><td colspan="5">載入超時，請重試</td></tr>';
-    };
-    
-    xhr.send();
-}
 
-// 新增輔助函數
-function escapeHtml(text) {
-    if (!text) return '';
-    const htmlEscapes = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;'
-    };
-    return text.toString().replace(/[&<>"']/g, char => htmlEscapes[char]);
-}
+        function displayRecords(records) {
+            const leaderboard = document.getElementById('leaderboard');
+            const sortedRecords = records
+                .filter(record => record && record[0] && typeof record[1] === 'number')
+                .sort((a, b) => b[1] - a[1]);
+
+            leaderboard.innerHTML = '';
+            
+            if (sortedRecords.length === 0) {
+                leaderboard.innerHTML = '<tr><td colspan="5">目前沒有遊戲記錄</td></tr>';
+                return;
+            }
+
+            sortedRecords.forEach((record, index) => {
+                const row = document.createElement('tr');
+                const timestamp = new Date(record[3] || Date.now());
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${escapeHtml(record[0])}</td>
+                    <td>${Math.round(record[1]).toLocaleString()}</td>
+                    <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
+                    <td>${timestamp.toLocaleString('zh-TW')}</td>
+                `;
+                leaderboard.appendChild(row);
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const htmlEscapes = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#x27;'
+            };
+            return text.toString().replace(/[&<>"']/g, char => htmlEscapes[char]);
+        }
 
         window.onload = loadRecords;
     </script>

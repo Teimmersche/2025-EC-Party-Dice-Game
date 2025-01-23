@@ -926,15 +926,12 @@ function handleGameEnd() {
         e.preventDefault();
         const wishText = wishForm.querySelector('textarea').value.trim();
         
-        // 發送遊戲結果
+        // 使用我們確認可用的 sendGameResult 函數
         sendGameResult(playerName, score, wishText);
         
         // 關閉祝福視窗
         wishModal.style.display = 'none';
         wishOverlay.style.display = 'none';
-        
-        // 跳轉到排行榜頁面
-        window.location.href = 'result.html';
     });
 }
 

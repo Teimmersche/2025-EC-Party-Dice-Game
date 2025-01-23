@@ -1004,12 +1004,15 @@ function handleSpecialCorner(cornerName) {
 
             // 判斷是特殊角落還是普通節點
             if (specialCorners.includes(playerPosition)) {
-                handleSpecialCorner('特殊角落');
-            } else {
-                // 顯示是否答題的選項
-                choiceContainer.style.display = "block";
-                rollDiceButton.disabled = true; // 禁用骰子按鈕，等待答題或扣分
-            }
+    const nodes = document.querySelectorAll('.node');
+    const currentNode = [...nodes].find(node => node.dataset.index == playerPosition);
+    if (currentNode) {
+        handleSpecialCorner(currentNode.dataset.name);
+    }
+} else {
+    choiceContainer.style.display = "block";
+    rollDiceButton.disabled = true;
+}
         }, 500);
     }, 1000);
 });

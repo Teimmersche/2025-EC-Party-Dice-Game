@@ -808,10 +808,13 @@ const createNodes = () => {
             if (isCorner) {
                 node.classList.add('node', 'corner');
                 
-                // 左上角設為起始點
                 if (i === 0 && j === 0) {
                     node.textContent = 'START';
                     node.dataset.name = 'start';
+                } else if (i === 0 && j === 10) {
+                    // 右上角設為機會命運
+                    node.textContent = '機會命運';
+                    node.dataset.name = 'chance';
                 } else {
                     node.textContent = '特殊角落';
                     node.dataset.name = '特殊角落';
@@ -821,6 +824,7 @@ const createNodes = () => {
                 node.dataset.index = cornerIndex;
                 specialCorners.push(cornerIndex);
             } else if (isEdge) {
+                // 其餘邊緣節點的處理保持不變
                 node.classList.add('node', 'path');
                 const nodeIndex = calculateNodeIndex(i, j);
                 const categoryNames = ['技術', '生活', '人物', '時事'];
@@ -899,31 +903,43 @@ adjustNodeStyles();
     }
 }
 
-function handleSpecialCorner(cornerName) {
+function handleSpecialCorner = (cornerName) => {
     if (cornerName === 'start') {
-    rollDiceButton.disabled = false;
-    return;
-}
-    switch (cornerName) {
-        case '特殊角落':
-            alert("歡迎來到特殊角落！你獲得了 50 分獎勵！");
-            score += 50;
-            break;
-        default:
-            alert(`你進入了 ${cornerName}，但目前沒有定義的行動。`);
-            break;
+        rollDiceButton.disabled = false;
+        return;
+    }
+    
+    if (cornerName === 'chance') {
+        const events = [
+            { text: '路上撿到發票，竟然中了特獎！獲得 100 分', value: 100 },
+            { text: '今天天氣真好，心情愉悅！獲得 30 分', value: 30 },
+            { text: '走路踩到水漥，弄髒了新鞋...失去 20 分', value: -20 },
+            { text: '遇到三倍加班，扣除 40 分', value: -40 },
+            { text: '搭公車遇到好心司機等你，加 25 分', value: 25 },
+            { text: '收到神祕紅包！獲得 50 分', value: 50 }
+        ];
+        
+        const randomEvent = events[Math.floor(Math.random() * events.length)];
+        alert(randomEvent.text);
+        score += randomEvent.value;
+        scoreDisplay.textContent = score;
+        
+        rollDiceButton.disabled = false;
+        return;
     }
 
+    // 其他特殊角落保持原有行為
+    alert("歡迎來到特殊角落！你獲得了 50 分獎勵！");
+    score += 50;
+    
     // 更新分數顯示
     scoreDisplay.textContent = score;
 
-    // 隱藏「是否答題」和其他相關視窗
+    // 隱藏相關視窗並啟用骰子按鈕
     choiceContainer.style.display = "none";
     questionContainer.style.display = "none";
-
-    // 啟用骰子按鈕，允許玩家繼續遊戲
     rollDiceButton.disabled = false;
-}
+};
            
         function updateDiceFace(value) {
             const dots = [

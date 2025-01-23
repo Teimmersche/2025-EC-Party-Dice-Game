@@ -99,7 +99,8 @@
             method: 'GET',
             mode: 'cors',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache'
             }
         });
         
@@ -109,38 +110,68 @@
         
         const data = await response.json();
         
-        if (data.status === 'success' && Array.isArray(data.records)) {
-            leaderboard.innerHTML = '';
-            
-            const sortedRecords = data.records
-                .filter(record => record && Array.isArray(record) && record.length >= 4)
-                .sort((a, b) => Number(b[1]) - Number(a[1]));
-            
-            sortedRecords.forEach((record, index) => {
-                if (!record[0]) return; // 跳過空紀錄
-                
-                const row = document.createElement('tr');
-                const timestamp = new Date(record[3]);
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${escapeHtml(record[0])}</td>
-                    <td>${Number(record[1]).toLocaleString()}</td>
-                    <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
-                    <td>${timestamp.toLocaleString()}</td>
-                `;
-                leaderboard.appendChild(row);
-            });
-        } else {
-            throw new Error('Invalid data format');
+        // 增強數據驗證
+        if (!data || typeof data !== 'object') {
+            throw new Error('Invalid response format');
         }
+
+        if (data.status !== 'success' || !Array.isArray(data.records)) {
+            throw new Error('Invalid data structure');
+        }
+        
+        leaderboard.innerHTML = '';
+        
+        // 改進數據過濾和排序
+        const sortedRecords = data.records
+            .filter(record => {
+                return record && 
+                       Array.isArray(record) && 
+                       record.length >= 4 &&
+                       record[0] && // 確保玩家名稱存在
+                       !isNaN(Number(record[1])) && // 確保分數是有效數字
+                       record[3]; // 確保時間戳存在
+            })
+            .sort((a, b) => Number(b[1]) - Number(a[1]));
+        
+        if (sortedRecords.length === 0) {
+            leaderboard.innerHTML = '<tr><td colspan="5">目前沒有遊戲記錄</td></tr>';
+            return;
+        }
+
+        sortedRecords.forEach((record, index) => {
+            const row = document.createElement('tr');
+            let timestamp;
+            try {
+                timestamp = new Date(record[3]);
+                if (isNaN(timestamp.getTime())) {
+                    throw new Error('Invalid date');
+                }
+            } catch (e) {
+                timestamp = new Date(); // 如果日期無效，使用當前時間
+            }
+
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${escapeHtml(record[0])}</td>
+                <td>${Number(record[1]).toLocaleString()}</td>
+                <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
+                <td>${timestamp.toLocaleString()}</td>
+            `;
+            leaderboard.appendChild(row);
+        });
+        
     } catch (error) {
         console.error('載入記錄失敗:', error);
-        leaderboard.innerHTML = '<tr><td colspan="5">載入失敗，請稍後再試或重新整理頁面</td></tr>';
+        leaderboard.innerHTML = `<tr><td colspan="5">載入失敗：${escapeHtml(error.message)}</td></tr>`;
+        
+        // 5秒後自動重試
+        setTimeout(loadRecords, 5000);
     }
 }
-        // 安全性處理：避免 XSS
+        // 改進的 HTML 轉義函數
 function escapeHtml(unsafe) {
-    return unsafe
+    if (unsafe == null) return '';
+    return String(unsafe)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")

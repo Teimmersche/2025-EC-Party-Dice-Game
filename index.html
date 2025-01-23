@@ -158,6 +158,30 @@
     width: min(40px, 20%);
     height: min(40px, 20%);
 }
+        .dice-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 10px;
+}
+        .game-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+}
+
+.info-item {
+    font-size: 1.1em;
+    font-weight: bold;
+}
         .dice-face {
             width: 100%;
             height: 100%;
@@ -380,21 +404,21 @@
     <p>玩家名稱：<input type="text" id="name" placeholder="輸入名字" /></p>
     <button class="button" id="startGame">開始遊戲</button>
 </div>
-<div class="board" id="board" style="display: none;"></div>
- <div class="center-controls" id="gameControls" style="display: none;">
-        <div class="score-display">
-            當前分數：<span id="score">100</span>
-        </div>
-        <div class="dice-section">
-            <div class="dice-result">
-                擲骰結果：<span id="diceResult">-</span>
-            </div>
-            <div class="dice" id="dice">
-                <div class="dice-face" id="diceFace"></div>
-            </div>
-            <button class="button" id="rollDice">擲骰</button>
+<div class="board" id="board">
+    <!-- 原有的節點 -->
+    <div class="dice-container">
+        <button class="button" id="rollDice">擲骰</button>
+        <div class="dice" id="dice">
+            <div class="dice-face" id="diceFace"></div>
         </div>
     </div>
+</div>
+
+<div class="game-info">
+    <div class="info-item">當前分數：<span id="score">100</span></div>
+    <div class="info-item">擲骰結果：<span id="diceResult">-</span></div>
+    <div class="info-item">擲骰次數：<span id="rollCount">0</span></div>
+</div>
 </div>
     <div class="scoreboard">
         <h2>計分版</h2>

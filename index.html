@@ -805,24 +805,17 @@ function handleGameEnd() {
     
     wishForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const wishText = wishForm.querySelector('textarea').value.trim();
-        if (!wishText) {
-            alert('請輸入祝福內容！');
-            return;
-        }
         
-        // 發送遊戲結果和祝福
+        // 發送遊戲結果
         sendGameResult(playerName, score, wishText);
         
-        // 透過 URL 參數跳轉到結果頁面
-        const params = new URLSearchParams({
-            name: playerName,
-            score: score,
-            wish: wishText
-        });
+        // 關閉祝福視窗
+        wishModal.style.display = 'none';
+        wishOverlay.style.display = 'none';
         
-        window.location.href = `result.html?${params.toString()}`;
+        // 跳轉到排行榜頁面
+        window.location.href = 'result.html';
     });
 }
 

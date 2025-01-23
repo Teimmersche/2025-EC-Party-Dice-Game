@@ -799,43 +799,30 @@ function handleGameEnd() {
     const wishModal = document.getElementById('wishModal');
     const wishOverlay = document.getElementById('wishOverlay');
     const wishForm = document.getElementById('wishForm');
-    const wishInput = wishForm.querySelector('textarea');
-
-    // 顯示祝福視窗
+    
     wishModal.style.display = 'block';
     wishOverlay.style.display = 'block';
-     
-    // 移除任何現有的事件監聽器
-    const clonedForm = wishForm.cloneNode(true);
-    wishForm.parentNode.replaceChild(clonedForm, wishForm);
     
-    // 重新獲取新的表單引用
-    const newWishForm = document.getElementById('wishForm');
-    const newWishInput = newWishForm.querySelector('textarea');
-
-    newWishForm.addEventListener('submit', function(e) {
+    wishForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const wishText = newWishInput.value.trim();
-        console.log("提交的祝福內容:", wishText); // 調試日誌
-        
-        // 儲存祝福到 localStorage
-        const wishes = JSON.parse(localStorage.getItem('newYearWishes') || '[]');
-        wishes.push({
-            name: playerName,
-            wish: wishText,
-            timestamp: new Date().toISOString()
-        });
-        localStorage.setItem('newYearWishes', JSON.stringify(wishes));
-
-        // 關閉視窗
-        wishModal.style.display = 'none';
-        wishOverlay.style.display = 'none';
+        const wishText = wishForm.querySelector('textarea').value.trim();
+        if (!wishText) {
+            alert('請輸入祝福內容！');
+            return;
+        }
         
         // 發送遊戲結果和祝福
         sendGameResult(playerName, score, wishText);
         
-        alert('感謝您的祝福！祝您新年快樂！🎊');
+        // 透過 URL 參數跳轉到結果頁面
+        const params = new URLSearchParams({
+            name: playerName,
+            score: score,
+            wish: wishText
+        });
+        
+        window.location.href = `result.html?${params.toString()}`;
     });
 }
 
@@ -937,4 +924,3 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 </body>
 </html>
-

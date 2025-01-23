@@ -1143,7 +1143,7 @@ function handleSpecialCorner(cornerName) {
 
     drawWheel();
     modal.style.display = 'flex';
-    spinButton.onclick = spinWheel;
+    spinButton.addEventListener('click', spinWheel, { once: true });  // 改用這種方式
 }
     
     // 更新分數顯示

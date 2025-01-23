@@ -911,12 +911,12 @@ function handleSpecialCorner(cornerName) {
     
     if (cornerName === 'chance') {
         const events = [
-            { text: '路上撿到發票，竟然中了特獎！獲得 100 分', value: 100 },
-            { text: '今天天氣真好，心情愉悅！獲得 30 分', value: 30 },
-            { text: '走路踩到水漥，弄髒了新鞋...失去 20 分', value: -20 },
-            { text: '遇到三倍加班，扣除 40 分', value: -40 },
-            { text: '搭公車遇到好心司機等你，加 25 分', value: 25 },
-            { text: '收到神祕紅包！獲得 50 分', value: 50 }
+            { text: '撿到同事的識別證並歸還-做善事 +10分', value: 10 },
+            { text: '公司訂下午茶遇到買一送一活動 +20分', value: 20 },
+            { text: '上班忘記打卡 -20分', value: -20 },
+            { text: '中午合菜主菜多一樣 +20分', value: 20 },
+            { text: '開公務車不小心擦撞傷 -30分', value: -30  },
+            { text: '上班打瞌睡被抓到 -10分', value: -10 }
         ];
         
         const randomEvent = events[Math.floor(Math.random() * events.length)];

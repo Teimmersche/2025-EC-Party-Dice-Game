@@ -101,18 +101,28 @@ async function loadRecords() {
             credentials: 'omit'
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('解析回應失敗:', text);
+            throw new Error('無效的資料格式');
         }
-        
-        const data = await response.json();
         
         if (data.status === 'success' && Array.isArray(data.records)) {
             leaderboard.innerHTML = '';
             
             const sortedRecords = data.records
-                .filter(record => record[0] && !isNaN(Number(record[1]))) // 確保有效的玩家名稱和分數
-                .sort((a, b) => Number(b[1]) - Number(a[1])); // 依分數排序
+                .filter(record => {
+                    // 確保所有必要的欄位都存在且有效
+                    return record && 
+                           record[0] && // 玩家名稱
+                           typeof record[1] === 'number' && // 分數
+                           !isNaN(record[1]) &&
+                           record[3]; // 時間戳
+                })
+                .sort((a, b) => Number(b[1]) - Number(a[1]));
             
             if (sortedRecords.length === 0) {
                 leaderboard.innerHTML = '<tr><td colspan="5">目前沒有遊戲記錄</td></tr>';
@@ -120,34 +130,32 @@ async function loadRecords() {
             }
 
             sortedRecords.forEach((record, index) => {
-                const row = document.createElement('tr');
-                const timestamp = new Date(record[3]);
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${escapeHtml(record[0])}</td>
-                    <td>${Number(record[1]).toLocaleString()}</td>
-                    <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
-                    <td>${timestamp.toLocaleString()}</td>
-                `;
-                leaderboard.appendChild(row);
+                try {
+                    const row = document.createElement('tr');
+                    const timestamp = new Date(record[3]);
+                    if (isNaN(timestamp.getTime())) {
+                        throw new Error('無效的時間格式');
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${escapeHtml(record[0])}</td>
+                        <td>${Math.round(Number(record[1])).toLocaleString()}</td>
+                        <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
+                        <td>${timestamp.toLocaleString('zh-TW')}</td>
+                    `;
+                    leaderboard.appendChild(row);
+                } catch (err) {
+                    console.error('處理記錄時發生錯誤:', err);
+                }
             });
         } else {
-            throw new Error('無效的資料格式');
+            throw new Error('無效的資料結構');
         }
     } catch (error) {
         console.error('載入記錄失敗:', error);
-        leaderboard.innerHTML = '<tr><td colspan="5">載入失敗，請稍後再試</td></tr>';
+        leaderboard.innerHTML = `<tr><td colspan="5">載入失敗: ${error.message}</td></tr>`;
     }
-}
-
-function escapeHtml(unsafe) {
-    if (unsafe == null) return '';
-    return String(unsafe)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
 }
 
         window.onload = loadRecords;

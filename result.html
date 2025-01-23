@@ -91,40 +91,62 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvEcNEn-txmfBJDGr85FUKD-BvDG2cFprmn6QM3vV_Af3x3llYhEGQan7MIEhs5GSfJw/exec';
 
         async function loadRecords() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=getRecords`);
-                const text = await response.text();
-                console.log('Response:', text);
-                
-                const data = JSON.parse(text);
-                
-                if (data.status === 'success' && Array.isArray(data.records)) {
-                    const leaderboard = document.getElementById('leaderboard');
-                    leaderboard.innerHTML = '';
-                    
-                    if (data.records.length > 0) {
-                        const sortedRecords = data.records
-                            .filter(record => record && Array.isArray(record) && record.length >= 4)
-                            .sort((a, b) => (b[1] || 0) - (a[1] || 0));
-                        
-                        sortedRecords.forEach((record, index) => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${index + 1}</td>
-                                <td>${record[0] || 'Unknown'}</td>
-                                <td>${record[1] || 0}</td>
-                                <td class="wish" title="${record[2] || ''}">${record[2] || ''}</td>
-                                <td>${record[3] ? new Date(record[3]).toLocaleString() : ''}</td>
-                            `;
-                            leaderboard.appendChild(row);
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('載入記錄失敗:', error);
-                alert('載入記錄失敗，請稍後再試');
+    const leaderboard = document.getElementById('leaderboard');
+    leaderboard.innerHTML = '<tr><td colspan="5">載入中...</td></tr>';
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=getRecords`, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Accept': 'application/json'
             }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        if (data.status === 'success' && Array.isArray(data.records)) {
+            leaderboard.innerHTML = '';
+            
+            const sortedRecords = data.records
+                .filter(record => record && Array.isArray(record) && record.length >= 4)
+                .sort((a, b) => Number(b[1]) - Number(a[1]));
+            
+            sortedRecords.forEach((record, index) => {
+                if (!record[0]) return; // 跳過空紀錄
+                
+                const row = document.createElement('tr');
+                const timestamp = new Date(record[3]);
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${escapeHtml(record[0])}</td>
+                    <td>${Number(record[1]).toLocaleString()}</td>
+                    <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
+                    <td>${timestamp.toLocaleString()}</td>
+                `;
+                leaderboard.appendChild(row);
+            });
+        } else {
+            throw new Error('Invalid data format');
+        }
+    } catch (error) {
+        console.error('載入記錄失敗:', error);
+        leaderboard.innerHTML = '<tr><td colspan="5">載入失敗，請稍後再試或重新整理頁面</td></tr>';
+    }
+}
+        // 安全性處理：避免 XSS
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
         window.onload = loadRecords;
     </script>

@@ -1025,49 +1025,6 @@ function handleSpecialCorner(cornerName) {
             ctx.restore();
         });
 
-function showLuckyWheel() {
-    const modal = document.getElementById('luckyWheelModal');
-    const canvas = document.getElementById('luckyWheelCanvas');
-    const ctx = canvas.getContext('2d');
-    const spinButton = document.getElementById('spinWheelButton');
-
-    const rewards = [
-        { text: '安慰紅包 +5分', value: 5 },
-        { text: '小紅包 +10分' , value: 10 },
-        { text: '中紅包 +20分', value: 20 },
-        { text: '大紅包 +30分', value: 30 },
-        { text: '特大紅包 +50分', value: 50 },
-        { text: '特級紅包 分數翻倍！', value: 'double' }
-    ];
-
-    function drawWheel() {
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const radius = canvas.width / 2 - 10;
-
-        rewards.forEach((reward, index) => {
-            const startAngle = (index * Math.PI * 2) / rewards.length;
-            const endAngle = ((index + 1) * Math.PI * 2) / rewards.length;
-
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-            ctx.closePath();
-            ctx.fillStyle = 'radial-gradient(circle, #333, #111)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fill();
-
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.rotate(startAngle + (endAngle - startAngle) / 2);
-            ctx.textAlign = "right";
-            ctx.fillStyle = "white";
-            ctx.font = "bold 16px Arial";
-            ctx.fillText(reward.text, radius - 20, 0);
-            ctx.restore();
-        });
-    }
-
     function spinWheel() {
         spinButton.addEventListener('click', () => {
             spinButton.classList.add('button-clicked');
@@ -1104,25 +1061,9 @@ function showLuckyWheel() {
         modal.style.display = 'flex';
         spinButton.onclick = spinWheel;
     }
-
-    drawWheel(); // 確保輪盤繪製完成
-}
-
-    // 隨機選擇獎勵
-    const reward = wheelRewards[Math.floor(Math.random() * wheelRewards.length)];
-
-    // 根據不同獎勵類型處理
-    switch (reward.value) {
-        case 'double':
-            score *= 2;
-            break;
-        default:
-            score += reward.value;
     }
 
-    alert(`幸運大轉盤！${reward.text}`);
-    scoreDisplay.textContent = score;
-    rollDiceButton.disabled = false;
+    drawWheel(); // 確保輪盤繪製完成
 }
     
     // 更新分數顯示

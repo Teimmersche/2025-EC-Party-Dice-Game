@@ -437,6 +437,25 @@
             min-height: 44px; /* 確保觸控面積足夠 */
         }
     }
+            .modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
     </style>
 
 </head>
@@ -505,6 +524,12 @@
             <button type="submit" class="wish-submit">送出祝福</button>
         </form>
     </div>
+    <div id="luckyWheelModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <canvas id="luckyWheelCanvas" width="300" height="300"></canvas>
+        <button id="spinWheelButton">旋轉</button>
+    </div>
+</div>
     <script>
         // Google Apps Script 網頁應用程式網址
 const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyem6VpFwrNopc5B_xWO8I6B7SsNvX41KJBzMcZMD_s-f8rxdiFOSO-p4olnvsGaM8/exec'; // 替換為您的網址
@@ -937,13 +962,18 @@ function handleSpecialCorner(cornerName) {
         return;
     }
 
-    if (cornerName === 'luckWheel') {
+    if (cornerName === 'luckyWheel') {
         showLuckyWheel();
         return;
     }
 
     function showLuckyWheel() {
-    const wheelRewards = [
+    const modal = document.getElementById('luckyWheelModal');
+    const canvas = document.getElementById('luckyWheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinButton = document.getElementById('spinWheelButton');
+
+    const rewards = [
         { text: '安慰紅包 +5分', value: 5 },
         { text: '小紅包 +10分' , value: 10 },
         { text: '中紅包 +20分', value: 20 },
@@ -951,6 +981,64 @@ function handleSpecialCorner(cornerName) {
         { text: '特大紅包 +50分', value: 50 },
         { text: '特級紅包 分數翻倍！', value: 'double' }
     ];
+
+    function drawWheel() {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = canvas.width / 2 - 10;
+
+        rewards.forEach((reward, index) => {
+            const startAngle = (index * Math.PI * 2) / rewards.length;
+            const endAngle = ((index + 1) * Math.PI * 2) / rewards.length;
+
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fillStyle = reward.color;
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(startAngle + (endAngle - startAngle) / 2);
+            ctx.textAlign = "right";
+            ctx.fillStyle = "white";
+            ctx.font = "bold 16px Arial";
+            ctx.fillText(reward.text, radius - 20, 0);
+            ctx.restore();
+        });
+    }
+
+    function spinWheel() {
+        spinButton.disabled = true;
+        const rotation = Math.random() * 360;
+        const spinDuration = 3000;
+
+        canvas.style.transition = `transform ${spinDuration}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+        canvas.style.transform = `rotate(${rotation + 720}deg)`;
+
+        setTimeout(() => {
+            const selectedIndex = Math.floor(((rotation % 360) / 360) * rewards.length);
+            const reward = rewards[selectedIndex];
+
+            if (reward.value === 'double') {
+                score *= 2;
+            } else {
+                score += reward.value;
+            }
+
+            alert(`你轉到了：${reward.text}`);
+            scoreDisplay.textContent = score;
+            spinButton.disabled = false;
+            modal.style.display = 'none';
+            rollDiceButton.disabled = false;
+        }, spinDuration);
+    }
+
+    drawWheel();
+    modal.style.display = 'flex';
+    spinButton.onclick = spinWheel;
+}
 
     // 隨機選擇獎勵
     const reward = wheelRewards[Math.floor(Math.random() * wheelRewards.length)];

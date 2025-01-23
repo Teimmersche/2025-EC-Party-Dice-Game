@@ -20,13 +20,13 @@
             background-attachment: fixed; /* 背景固定不隨滾動 */
         }
         .board {
+    position: relative; /* 新增這行 */
     display: grid;
     grid-template-columns: repeat(8, minmax(30px, 1fr));
     grid-template-rows: repeat(8, minmax(30px, 1fr));
     width: 90vmin;
     height: 90vmin;
     margin: 20px;
-    position: relative;
     gap: 2px;
     justify-content: center;
     align-items: center;
@@ -185,6 +185,37 @@
             border-radius: 50%;
             place-self: center;
         }
+        .center-controls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.score-display {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.dice-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
         @keyframes rollDice {
             0% {
                 transform: rotateX(0deg) rotateY(0deg);
@@ -362,14 +393,21 @@
     <button class="button" id="startGame">開始遊戲</button>
 </div>
 <div class="board" id="board" style="display: none;"></div>
-<div class="controls" style="display: none;" id="gameControls">
-        <p>當前分數：<span id="score">100</span></p>
-        <p>擲骰結果：<span id="diceResult">-</span></p>
-        <div class="dice" id="dice">
-            <div class="dice-face" id="diceFace"></div>
+ <div class="center-controls" id="gameControls" style="display: none;">
+        <div class="score-display">
+            當前分數：<span id="score">100</span>
         </div>
-        <button class="button" id="rollDice">擲骰</button>
+        <div class="dice-section">
+            <div class="dice-result">
+                擲骰結果：<span id="diceResult">-</span>
+            </div>
+            <div class="dice" id="dice">
+                <div class="dice-face" id="diceFace"></div>
+            </div>
+            <button class="button" id="rollDice">擲骰</button>
+        </div>
     </div>
+</div>
     <div class="scoreboard">
         <h2>計分版</h2>
         <table>

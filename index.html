@@ -803,13 +803,20 @@ const createNodes = () => {
             const node = document.createElement('div');
             const isEdge = (i === 0 || i === 10 || j === 0 || j === 10);
             const isCorner = (i === 0 && j === 0) || (i === 0 && j === 10) || 
-                             (i === 10 && j === 0) || (i === 10 && j === 10);
+                           (i === 10 && j === 0) || (i === 10 && j === 10);
 
             if (isCorner) {
                 node.classList.add('node', 'corner');
-                node.textContent = '特殊角落';
-                node.dataset.name = '特殊角落';
-
+                
+                // 左上角設為起始點
+                if (i === 0 && j === 0) {
+                    node.textContent = 'START';
+                    node.dataset.name = 'start';
+                } else {
+                    node.textContent = '特殊角落';
+                    node.dataset.name = '特殊角落';
+                }
+                
                 const cornerIndex = calculateNodeIndex(i, j);
                 node.dataset.index = cornerIndex;
                 specialCorners.push(cornerIndex);
@@ -825,10 +832,30 @@ const createNodes = () => {
             } else {
                 node.classList.add('node', 'hidden-node');
             }
-
+            
             board.appendChild(node);
         }
     }
+};
+
+const handleSpecialCorner = (cornerName) => {
+    // 如果是起始點，不觸發任何事件
+    if (cornerName === 'start') {
+        rollDiceButton.disabled = false;
+        return;
+    }
+
+    // 其他特殊角落保持原有行為
+    alert("歡迎來到特殊角落！你獲得了 50 分獎勵！");
+    score += 50;
+    
+    // 更新分數顯示
+    scoreDisplay.textContent = score;
+
+    // 隱藏相關視窗並啟用骰子按鈕
+    choiceContainer.style.display = "none";
+    questionContainer.style.display = "none";
+    rollDiceButton.disabled = false;
 };
 
 function adjustNodeStyles() {

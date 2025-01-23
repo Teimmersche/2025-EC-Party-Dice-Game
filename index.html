@@ -526,12 +526,12 @@ async function sendGameResult(playerName, score, wishText) {
         const result = await response.json();
 
         if (result.status === 'success') {
-            loadingMessage.textContent = '成績儲存成功！';
+            loadingMessage.textContent = '成績儲存成功！正在前往排行榜...';
             loadingMessage.style.background = 'rgba(0, 128, 0, 0.8)';
             
-            // 延遲跳轉
+            // 使用 window.location.replace 確保正確導向到排行榜頁面
             setTimeout(() => {
-                window.location.href = 'result.html';
+                window.location.replace('result.html');
             }, 1000);
         } else {
             throw new Error(result.message || '伺服器回應異常');

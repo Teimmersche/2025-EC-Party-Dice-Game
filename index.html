@@ -1026,50 +1026,87 @@ function handleSpecialCorner(cornerName) {
         });
     }
 
+function showLuckyWheel() {
+    const modal = document.getElementById('luckyWheelModal');
+    const canvas = document.getElementById('luckyWheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinButton = document.getElementById('spinWheelButton');
+
+    const rewards = [
+        { text: '安慰紅包 +5分', value: 5 },
+        { text: '小紅包 +10分' , value: 10 },
+        { text: '中紅包 +20分', value: 20 },
+        { text: '大紅包 +30分', value: 30 },
+        { text: '特大紅包 +50分', value: 50 },
+        { text: '特級紅包 分數翻倍！', value: 'double' }
+    ];
+
+    function drawWheel() {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = canvas.width / 2 - 10;
+
+        rewards.forEach((reward, index) => {
+            const startAngle = (index * Math.PI * 2) / rewards.length;
+            const endAngle = ((index + 1) * Math.PI * 2) / rewards.length;
+
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fillStyle = 'radial-gradient(circle, #333, #111)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fill();
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(startAngle + (endAngle - startAngle) / 2);
+            ctx.textAlign = "right";
+            ctx.fillStyle = "white";
+            ctx.font = "bold 16px Arial";
+            ctx.fillText(reward.text, radius - 20, 0);
+            ctx.restore();
+        });
+    }
+
     function spinWheel() {
         spinButton.addEventListener('click', () => {
-        spinButton.classList.add('button-clicked');
-        setTimeout(() => {
-            spinButton.classList.remove('button-clicked');
-        }, 300);
-        spinButton.disabled = true;
-        const rotation = Math.random() * 360;
-        const spinDuration = 3000;
+            spinButton.classList.add('button-clicked');
+            setTimeout(() => {
+                spinButton.classList.remove('button-clicked');
+            }, 300);
+            spinButton.disabled = true;
 
-        canvas.style.transition = `transform ${spinDuration}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
-        canvas.style.transform = `rotate(${rotation + 720}deg)`;
+            const rotation = Math.random() * 360;
+            const spinDuration = 3000;
 
-        setTimeout(() => {
-            const selectedIndex = Math.floor(((rotation % 360) / 360) * rewards.length);
-            const reward = rewards[selectedIndex];
+            canvas.style.transition = `transform ${spinDuration}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+            canvas.style.transform = `rotate(${rotation + 720}deg)`;
 
-            if (reward.value === 'double') {
-                score *= 2;
-            } else {
-                score += reward.value;
-            }
+            setTimeout(() => {
+                const selectedIndex = Math.floor(((rotation % 360) / 360) * rewards.length);
+                const reward = rewards[selectedIndex];
 
-            alert(`你轉到了：${reward.text}`);
-            scoreDisplay.textContent = score;
-            spinButton.disabled = false;
-            modal.style.display = 'none';
-            rollDiceButton.disabled = false;
-        }, spinDuration);
-    })
+                if (reward.value === 'double') {
+                    score *= 2;
+                } else {
+                    score += reward.value;
+                }
 
-    drawWheel();
-    modal.style.display = 'flex';
-    spinButton.onclick = spinWheel;
+                alert(`你轉到了：${reward.text}`);
+                scoreDisplay.textContent = score;
+                spinButton.disabled = false;
+                modal.style.display = 'none';
+                rollDiceButton.disabled = false;
+            }, spinDuration);
+        });
 
-    // 繪製指針
-ctx.beginPath();
-ctx.moveTo(centerX, centerY);
-ctx.lineTo(centerX + radius * 0.8, centerY);
-ctx.lineTo(centerX + radius * 0.6, centerY + 20);
-ctx.lineTo(centerX + radius * 0.6, centerY - 20);
-ctx.closePath();
-ctx.fillStyle = '#333';
-ctx.fill();
+        drawWheel();
+        modal.style.display = 'flex';
+        spinButton.onclick = spinWheel;
+    }
+
+    drawWheel(); // 確保輪盤繪製完成
 }
 
     // 隨機選擇獎勵

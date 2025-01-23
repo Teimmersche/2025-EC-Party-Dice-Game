@@ -423,42 +423,64 @@ const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyem6VpFwrN
 
 // 修改 sendGameResult 函數以確保正確處理 wish 參數
 function sendGameResult(playerName, score, wishText) {
-    console.log("準備傳送的完整資料：", { playerName, score, wish: wishText }); // 調試日誌
-    
-    // 確保所有參數都被正確編碼
-    const params = new URLSearchParams({
-        playerName: playerName || '',
-        score: score || 0,
+    // 加入除錯訊息
+    console.log('準備發送資料：', { playerName, score, wishText });
+
+    // 確保所有資料都是有效的
+    if (!playerName || typeof score === 'undefined') {
+        console.error('無效的資料：', { playerName, score });
+        alert('資料無效，請重試');
+        return;
+    }
+
+    // 建立要傳送的資料物件
+    const data = {
+        playerName: playerName,
+        score: score,
         wish: wishText || '',
         timestamp: new Date().toISOString()
-    });
+    };
 
+    // 建立查詢字串
+    const params = new URLSearchParams(data);
     const url = `${googleAppsScriptUrl}?${params.toString()}`;
-    console.log('完整請求 URL:', url); // 調試日誌
+    
+    console.log('發送請求到：', url);
 
+    // 發送請求
     fetch(url, {
         method: 'GET',
         mode: 'cors',
         credentials: 'omit'
     })
     .then(response => {
-        console.log('服務器響應:', response); // 調試日誌
+        console.log('收到伺服器回應：', response.status);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
         }
         return response.text();
     })
     .then(text => {
-        console.log('服務器返回文本:', text); // 調試日誌
-        saveToHistory(playerName, score);
-        loadHistory();
-        console.log('本地歷史記錄已更新'); // 調試日誌
+        console.log('回應內容：', text);
+        try {
+            const result = JSON.parse(text);
+            if (result.status === 'success') {
+                console.log('資料儲存成功');
+                // 等待一下再轉址，確保資料有時間寫入
+                setTimeout(() => {
+                    window.location.href = 'result.html';
+                }, 1000);
+            } else {
+                throw new Error(result.message || '儲存失敗');
+            }
+        } catch (e) {
+            console.error('解析回應時發生錯誤：', e);
+            throw e;
+        }
     })
     .catch(error => {
-        console.error('發送數據時出錯:', error);
-        saveToHistory(playerName, score);
-        loadHistory();
-        alert('遊戲紀錄已在本地儲存，但可能無法同步到伺服器');
+        console.error('發送資料時發生錯誤：', error);
+        alert('儲存資料時發生錯誤，請重試');
     });
 }
 

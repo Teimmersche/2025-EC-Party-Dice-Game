@@ -812,9 +812,11 @@ const createNodes = () => {
                     node.textContent = 'START';
                     node.dataset.name = 'start';
                 } else if (i === 0 && j === 10) {
-                    // 右上角設為機會命運
                     node.textContent = '機會命運';
                     node.dataset.name = 'chance';
+                } else if (i === 10 && j === 10) {
+                    node.textContent = '員工旅遊';
+                    node.dataset.name = 'travel';
                 } else {
                     node.textContent = '特殊角落';
                     node.dataset.name = '特殊角落';
@@ -924,6 +926,13 @@ function handleSpecialCorner(cornerName) {
         score += randomEvent.value;
         scoreDisplay.textContent = score;
         
+        rollDiceButton.disabled = false;
+        return;
+    }
+    if (cornerName === 'travel') {
+        alert('EC環球員旅來到杜拜土耳其！超讚的啦！獲得 150 分！');
+        score += 150;
+        scoreDisplay.textContent = score;
         rollDiceButton.disabled = false;
         return;
     }

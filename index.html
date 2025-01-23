@@ -838,26 +838,6 @@ const createNodes = () => {
     }
 };
 
-const handleSpecialCorner = (cornerName) => {
-    // 如果是起始點，不觸發任何事件
-    if (cornerName === 'start') {
-        rollDiceButton.disabled = false;
-        return;
-    }
-
-    // 其他特殊角落保持原有行為
-    alert("歡迎來到特殊角落！你獲得了 50 分獎勵！");
-    score += 50;
-    
-    // 更新分數顯示
-    scoreDisplay.textContent = score;
-
-    // 隱藏相關視窗並啟用骰子按鈕
-    choiceContainer.style.display = "none";
-    questionContainer.style.display = "none";
-    rollDiceButton.disabled = false;
-};
-
 function adjustNodeStyles() {
     const isSmallScreen = window.innerWidth < 600;
     const nodes = document.querySelectorAll('.node');
@@ -920,6 +900,10 @@ adjustNodeStyles();
 }
 
 function handleSpecialCorner(cornerName) {
+    if (cornerName === 'start') {
+    rollDiceButton.disabled = false;
+    return;
+}
     switch (cornerName) {
         case '特殊角落':
             alert("歡迎來到特殊角落！你獲得了 50 分獎勵！");

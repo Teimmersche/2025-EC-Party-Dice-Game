@@ -410,6 +410,33 @@
         height: 100px;
     }
 }
+            .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .scoreboard-btn {
+        background-color: #28a745; /* 使用綠色來區分不同功能的按鈕 */
+    }
+    
+    .scoreboard-btn:hover {
+        background-color: #218838;
+    }
+    
+    @media screen and (max-width: 768px) {
+        .button-group {
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .button {
+            width: 200px; /* 在手機版面上設定固定寬度 */
+            min-height: 44px; /* 確保觸控面積足夠 */
+        }
+    }
     </style>
 
 </head>
@@ -418,6 +445,13 @@
     <div class="controls">
     <p>玩家名稱：<input type="text" id="name" placeholder="輸入名字" /></p>
     <button class="button" id="startGame">開始遊戲</button>
+</div>
+    <div class="controls">
+    <p>玩家名稱：<input type="text" id="name" placeholder="輸入名字" /></p>
+    <div class="button-group">
+        <button class="button" id="startGame">開始遊戲</button>
+        <button class="button scoreboard-btn" id="viewScoreboard" onclick="window.location.href='result.html'">查看排行榜</button>
+    </div>
 </div>
 <div class="board" id="board" style="display: none;"></div>
 <div class="controls" style="display: none;" id="gameControls">

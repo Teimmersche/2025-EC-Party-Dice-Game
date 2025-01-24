@@ -1323,49 +1323,46 @@ function setupAutosave() {
     const nodes = document.querySelectorAll('.node');
     const currentNode = [...nodes].find(node => node.dataset.index == position);
 
-    if (!currentNode) {
-        console.error("無法找到當前節點，位置：", position);
+    if (!currentNode || !currentNode.dataset.category) {
+        console.error("無效的節點或分類");
         return;
     }
 
     const category = currentNode.dataset.category;
-    if (!category) {
-        console.warn("當前節點沒有分類，跳過答題。");
-        return;
-    }
-
     const questionPool = questions[category];
+
     if (!questionPool || questionPool.length === 0) {
-        console.warn("無可用題目，分類：", category);
+        console.warn("無可用題目");
         return;
     }
 
-    // 過濾出未使用的題目
-    const availableQuestions = questionPool.filter(
-        (_, index) => !usedQuestions[category].includes(index)
-    );
+    // 獲取未使用的題目索引
+    const unusedIndices = questionPool.map((_, index) => index)
+        .filter(index => !usedQuestions[category].includes(index));
 
-    // 如果所有題目都用完了，重置該類別的已使用題目記錄
-    if (availableQuestions.length === 0) {
+    // 如果所有題目都用過了，重置該類別
+    if (unusedIndices.length === 0) {
         usedQuestions[category] = [];
-        console.log(`${category}類別的題目已用完，重置題庫`);
-        // 重新獲取所有題目
-        const questionIndex = Math.floor(Math.random() * questionPool.length);
-        const question = questionPool[questionIndex];
-        usedQuestions[category].push(questionIndex);
-    } else {
-        // 從未使用的題目中隨機選擇
-        const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-        const question = availableQuestions[randomIndex];
-        // 找出這個題目在原始題庫中的索引
-        const originalIndex = questionPool.indexOf(question);
-        usedQuestions[category].push(originalIndex);
+        const randomIndex = Math.floor(Math.random() * questionPool.length);
+        const question = questionPool[randomIndex];
+        usedQuestions[category].push(randomIndex);
+        displayQuestion(question);
+        return;
     }
 
-    const question = availableQuestions.length === 0 
-        ? questionPool[Math.floor(Math.random() * questionPool.length)]
-        : availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+    // 從未使用的題目中隨機選擇
+    const randomUnusedIndex = Math.floor(Math.random() * unusedIndices.length);
+    const selectedQuestionIndex = unusedIndices[randomUnusedIndex];
+    const question = questionPool[selectedQuestionIndex];
+    
+    // 記錄這個題目已被使用
+    usedQuestions[category].push(selectedQuestionIndex);
+    
+    displayQuestion(question);
+}
 
+// 將顯示題目的邏輯抽離出來
+function displayQuestion(question) {
     questionText.textContent = question.text;
     optionsContainer.innerHTML = "";
 

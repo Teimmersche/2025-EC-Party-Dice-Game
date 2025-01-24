@@ -625,6 +625,16 @@
         font-size: 1.3em;
     }
 }
+            .question-category {
+    background-color: #4a5568;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 15px;
+    display: inline-block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
     </style>
 
 </head>
@@ -690,10 +700,11 @@
             <tbody id="history"></tbody>
         </table>
     </div>
-    <div class="question-container" id="questionContainer">
-        <h2 id="questionText">問題</h2>
-        <div id="options"></div>
-    </div>
+   <div class="question-container" id="questionContainer">
+    <div class="question-category" id="questionCategory"></div>
+    <h2 id="questionText">問題</h2>
+    <div id="options"></div>
+</div>
   <div class="question-container" id="choiceContainer">
     <h2>是否答題？</h2>
     <button id="answerButton" class="button">答題</button>
@@ -1456,6 +1467,26 @@ function setupAutosave() {
     }
 
     const category = currentNode.dataset.category;
+    const questionCategory = document.getElementById('questionCategory');
+    questionCategory.textContent = `${category}類問題`;
+    switch(category) {
+        case '技術':
+            questionCategory.style.backgroundColor = '#e3f2fd';
+            questionCategory.style.color = '#1e3a8a';
+            break;
+        case '生活':
+            questionCategory.style.backgroundColor = '#e8f5e9';
+            questionCategory.style.color = '#1b5e20';
+            break;
+        case '人物':
+            questionCategory.style.backgroundColor = '#f3e5f5';
+            questionCategory.style.color = '#4a148c';
+            break;
+        case '時事':
+            questionCategory.style.backgroundColor = '#fff3e0';
+            questionCategory.style.color = '#e65100';
+            break;
+    }
     const questionPool = questions[category];
 
     if (!questionPool || questionPool.length === 0) {

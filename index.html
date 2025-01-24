@@ -517,6 +517,54 @@
     background-color: #cccccc;
     cursor: not-allowed;
 }
+            .game-rules {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.game-rules h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.rules-content {
+    padding: 0 20px;
+}
+
+.rules-content ul {
+    padding-left: 20px;
+}
+
+.rules-content ul ul {
+    margin: 10px 0;
+}
+
+.rules-content li {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+/* 響應式設計 */
+@media (max-width: 600px) {
+    .game-rules {
+        margin: 20px 10px;
+        padding: 15px;
+    }
+    
+    .rules-content {
+        padding: 0 10px;
+    }
+    
+    .game-rules h2 {
+        font-size: 1.3em;
+    }
+}
     </style>
 
 </head>
@@ -527,6 +575,25 @@
     <div class="button-group">
         <button class="button" id="startGame">開始遊戲</button>
         <button class="button scoreboard-btn" id="viewScoreboard" onclick="window.location.href='result.html'">查看排行榜</button>
+    </div>
+</div>
+    <div class="game-rules">
+    <h2>遊戲規則說明</h2>
+    <div class="rules-content">
+        <p><strong>基本規則：</strong></p>
+        <ul>
+            <li>玩家從起點開始(基礎持有100分)，擲骰子決定前進步數</li>
+            <li>每個格子都有不同的事件：
+                <ul>
+                    <li>🎯 一般格子：回答該類別題目，答對 +20分，答錯 -20分</li>
+                    <li>🎲 機會命運：隨機觸發事件，分數可能增減</li>
+                    <li>✈️ 員工旅遊：EC出航！獲得高分獎勵！</li>
+                    <li>🎡 幸運輪盤：新春紅包這裡拿！轉動輪盤獲得隨機獎勵！</li>
+                </ul>
+            </li>
+            <li>完成兩圈遊戲結束，累積最高分者為贏家</li>
+            <li>遊戲中可選擇答題或支付 10 分跳過</li>
+        </ul>
     </div>
 </div>
 <div class="board" id="board" style="display: none;"></div>
@@ -1380,11 +1447,11 @@ function displayQuestion(question) {
 }
       function handleAnswer(isCorrect) {
     if (isCorrect) {
-        alert("答對了！加10分！");
-        score += 10;
+        alert("答對了！加20分！");
+        score += 20;
     } else {
-        alert("答錯了！扣10分！");
-        score -= 10;
+        alert("答錯了！扣20分！");
+        score -= 20;
     }
 
     // 更新分數顯示

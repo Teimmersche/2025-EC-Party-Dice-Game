@@ -646,6 +646,37 @@
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+            .controls {
+    color: white;  /* 文字改為白色 */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);  /* 添加文字陰影 */
+}
+
+/* 輸入框樣式 */
+#name {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+#name::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* 遊戲控制區域 */
+#gameControls {
+    color: white;
+    font-size: 1.2em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 分數和骰子結果強調 */
+#score, #diceResult {
+    font-weight: bold;
+    color: #ffd700;  /* 使用金色突出顯示 */
+    padding: 0 5px;
+}
     </style>
 
 </head>

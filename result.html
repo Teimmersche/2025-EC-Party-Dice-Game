@@ -91,6 +91,49 @@ th, td {
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
+td {
+    position: relative;  /* 為懸浮提示定位 */
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+td.player-name, td.wish {
+    max-width: 150px;  /* 可以根據需要調整 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+td.player-name:hover::after,
+td.wish:hover::after {
+    content: attr(data-full-text);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 1000;
+    white-space: normal;
+    max-width: 300px;
+    word-wrap: break-word;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+td {
+    overflow: visible;
+}
+@media screen and (max-width: 768px) {
+    td.player-name, td.wish {
+        max-width: 100px;
+    }
+    
+    td.player-name:hover::after,
+    td.wish:hover::after {
+        max-width: 200px;
+        font-size: 12px;
+    }
+}
 
 th {
     background-color: #007bff;
@@ -210,31 +253,34 @@ h1 {
         }
 
         function displayRecords(records) {
-            const leaderboard = document.getElementById('leaderboard');
-            const sortedRecords = records
-                .filter(record => record && record[0] && typeof record[1] === 'number')
-                .sort((a, b) => b[1] - a[1]);
+    const leaderboard = document.getElementById('leaderboard');
+    const sortedRecords = records
+        .filter(record => record && record[0] && typeof record[1] === 'number')
+        .sort((a, b) => b[1] - a[1]);
 
-            leaderboard.innerHTML = '';
-            
-            if (sortedRecords.length === 0) {
-                leaderboard.innerHTML = '<tr><td colspan="5">目前沒有遊戲記錄</td></tr>';
-                return;
-            }
+    leaderboard.innerHTML = '';
+    
+    if (sortedRecords.length === 0) {
+        leaderboard.innerHTML = '<tr><td colspan="5">目前沒有遊戲記錄</td></tr>';
+        return;
+    }
 
-            sortedRecords.forEach((record, index) => {
-                const row = document.createElement('tr');
-                const timestamp = new Date(record[3] || Date.now());
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${escapeHtml(record[0])}</td>
-                    <td>${Math.round(record[1]).toLocaleString()}</td>
-                    <td class="wish" title="${escapeHtml(record[2] || '')}">${escapeHtml(record[2] || '')}</td>
-                    <td>${timestamp.toLocaleString('zh-TW')}</td>
-                `;
-                leaderboard.appendChild(row);
-            });
-        }
+    sortedRecords.forEach((record, index) => {
+        const row = document.createElement('tr');
+        const timestamp = new Date(record[3] || Date.now());
+        const playerName = escapeHtml(record[0]);
+        const wish = escapeHtml(record[2] || '');
+        
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td class="player-name" data-full-text="${playerName}">${playerName}</td>
+            <td>${Math.round(record[1]).toLocaleString()}</td>
+            <td class="wish" data-full-text="${wish}">${wish}</td>
+            <td>${timestamp.toLocaleString('zh-TW')}</td>
+        `;
+        leaderboard.appendChild(row);
+    });
+}
 
         function escapeHtml(text) {
             if (!text) return '';

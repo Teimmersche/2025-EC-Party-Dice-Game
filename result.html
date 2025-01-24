@@ -7,21 +7,21 @@
     <style>
         /* 原有樣式保持不變 */
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-            background-image: url('https://png.pngtree.com/thumb_back/fh260/background/20190223/ourmid/pngtree-fresh-sweet-watercolor-soft-gradient-border-background-colorgradientsimpleframe-image_75501.jpg');
-            background-size: cover;
-        }
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    /* 使用與遊戲頁面相同的漸層背景 */
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    background-attachment: fixed;
+}
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
         
         /* 新增按鈕容器樣式 */
         .button-container {
@@ -79,23 +79,34 @@
                 min-height: 44px;
             }
         }
-        table {
+table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
     background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-th, td {
-    padding: 12px;
+th {
+    background-color: #4a5568;  /* 與遊戲主頁按鈕顏色統一 */
+    color: white;
+    padding: 15px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
 }
+
 td {
-    position: relative;  /* 為懸浮提示定位 */
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+tr:hover {
+    background-color: #f8fafc;
+}
+
+/* 最後一行移除底部邊框 */
+tr:last-child td {
+    border-bottom: none;
 }
 td.player-name, td.wish {
     max-width: 150px;  /* 可以根據需要調整 */
@@ -216,6 +227,41 @@ td.wish.expanded::after {
         position: relative;
         padding-right: 25px; /* 為指示器留空間 */
     }
+}
+        .refresh-btn, .return-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.refresh-btn {
+    background-color: #48bb78;  /* 綠色 */
+}
+
+.return-btn {
+    background-color: #4a5568;  /* 深灰色 */
+}
+
+.refresh-btn:hover {
+    background-color: #38a169;
+    transform: translateY(-1px);
+}
+
+.return-btn:hover {
+    background-color: #2d3748;
+    transform: translateY(-1px);
+}
+
+/* 標題樣式優化 */
+h1 {
+    text-align: center;
+    color: #4a5568;  /* 改用較沉穩的顏色 */
+    margin-bottom: 30px;
+    font-size: 28px;
 }
     </style>
 </head>
